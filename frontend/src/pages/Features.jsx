@@ -1,7 +1,17 @@
+import FeaturesHero from "../components/FeaturesHero";
+import AllFeatures from "../components/AllFeatures";
+import AdvancedAICapabilities from "../components/AdvancedAICapabilities";
+import AdvancedTechnology from "../components/AdvancedTechnology";
+import FeaturesCTA from "../components/FeaturesCTA";
+
 export default function Features() {
-    return (
-        <div>
-            <h1>Features</h1>
-        </div>
-    )
+  return (
+    <main className="w-full">
+      <FeaturesHero />
+      <AllFeatures />
+      <AdvancedAICapabilities />
+      <AdvancedTechnology />
+      <FeaturesCTA />
+    </main>
+  );
 }
