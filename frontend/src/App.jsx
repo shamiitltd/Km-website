@@ -8,6 +8,7 @@ import AboutUs from './pages/AboutUs'
 import Pricing from './pages/Pricing'
 import Blog from './pages/Blog'
 import Contact from './pages/Contact'
+import Footer from './components/Footer'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path='/blog' element={<Blog />} />
           <Route path='/contact' element={<Contact />} />
         </Routes>
+        <Footer />
       </BrowserRouter>
     </>
   )
