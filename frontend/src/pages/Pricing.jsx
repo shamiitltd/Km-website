@@ -1,7 +1,16 @@
+import React from 'react';
+import PricingHero from '../components/PricingHero';
+import PricingCards from '../components/PricingCards';
+import PricingCompare from '../components/PricingCompare';
+import PricingCTA from '../components/PricingCTA';
+
 export default function Pricing() {
     return (
-        <div>
-            <h1>Pricing</h1>
-        </div>
+        <main className="w-full">
+            <PricingHero />
+            <PricingCards />
+            <PricingCompare />
+            <PricingCTA />
+        </main>
     )
 }
