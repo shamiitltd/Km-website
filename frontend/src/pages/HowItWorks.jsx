@@ -1,7 +1,15 @@
+import HowItWorksHero from "../components/HowItWorksHero";
+import FiveStepProcess from "../components/FiveStepProcess";
+import WhyFarmersLove from "../components/WhyFarmersLove";
+import HowItWorksCTA from "../components/HowItWorksCTA";
+
 export default function HowItWorks() {
     return (
-        <div>
-            <h1>How It Works</h1>
-        </div>
+        <main className="w-full">
+            <HowItWorksHero />
+            <FiveStepProcess />
+            <WhyFarmersLove />
+            <HowItWorksCTA />
+        </main>
     )
 }
