@@ -61,6 +61,13 @@ export default function BlogList() {
     return matchesCategory && matchesSearch;
   });
 
+  const getExcerpt = (htmlContent, length = 120) => {
+    if (!htmlContent) return '';
+    const plainText = htmlContent.replace(/<[^>]+>/g, '');
+    if (plainText.length <= length) return plainText;
+    return plainText.substring(0, length).trim() + '...';
+  };
+
   return (
     <section className="w-full py-12 px-6 md:px-12 lg:px-16 xl:px-24 bg-[#FAFCFA] flex justify-center">
       <div className="max-w-[95rem] w-full">
@@ -115,7 +122,7 @@ export default function BlogList() {
               </div>
             ) : (
               filteredBlogs.map((post) => (
-                <div key={post.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col md:flex-row shadow-sm hover:shadow-md transition-shadow group">
+                <Link to={`/blog/${post.id}`} key={post.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col md:flex-row shadow-sm hover:shadow-md transition-shadow group cursor-pointer block">
                   {/* Image */}
                   <div className="w-full md:w-[320px] shrink-0 overflow-hidden h-[240px] md:h-auto relative">
                     <img 
@@ -126,10 +133,11 @@ export default function BlogList() {
                     />
                   </div>
                   {/* Content */}
-                  <div className="p-8 flex flex-col justify-center">
-                    <p className="text-[#2C8C44] text-[13px] font-bold tracking-wider uppercase mb-2">{post.category}</p>
-                    <h3 className="text-[26px] font-bold text-gray-900 leading-tight mb-4 group-hover:text-[#2C8C44] transition-colors">{post.title}</h3>
-                    <p className="text-gray-600 text-[16.5px] mb-8 line-clamp-2 leading-relaxed">{post.content}</p>
+                  <div className="p-8 flex flex-col justify-center w-full">
+                    <h3 className="text-[26px] md:text-[28px] font-bold text-gray-900 leading-tight mb-3 group-hover:text-[#2C8C44] transition-colors w-full">{post.title}</h3>
+                    <p className="text-gray-700 text-[15px] mb-6 line-clamp-3 leading-relaxed">
+                      <strong>A Kisan Mitra Research Brief — {new Date().getFullYear()}</strong> <em className="text-gray-500">Category: {post.category}</em> Abstract: {getExcerpt(post.content, 120)}
+                    </p>
                     
                     <div className="flex flex-wrap items-center gap-6 mt-auto">
                       <div className="flex items-center gap-2">
@@ -145,7 +153,7 @@ export default function BlogList() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))
             )}
 
@@ -168,7 +176,7 @@ export default function BlogList() {
               <h3 className="text-[#123C26] text-[22px] font-bold mb-8">Popular Posts</h3>
               <div className="flex flex-col gap-8">
                 {popularPosts.length > 0 ? popularPosts.map((post, idx) => (
-                  <div key={post.id} className="flex items-center gap-5 group cursor-pointer">
+                  <Link to={`/blog/${post.id}`} key={post.id} className="flex items-center gap-5 group cursor-pointer block">
                     {/* Parent is relative but NOT overflow-hidden, preventing cutoff */}
                     <div className="relative shrink-0 w-24 h-24">
                       <div className="w-full h-full rounded-xl overflow-hidden">
@@ -187,7 +195,7 @@ export default function BlogList() {
                       <h4 className="text-[16px] font-bold text-gray-900 leading-tight mb-2 group-hover:text-[#2C8C44] transition-colors line-clamp-2">{post.title}</h4>
                       <p className="text-[13.5px] text-gray-500 font-medium">{new Date(post.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                     </div>
-                  </div>
+                  </Link>
                 )) : (
                   <p className="text-gray-500 text-[15px]">No posts available.</p>
                 )}
