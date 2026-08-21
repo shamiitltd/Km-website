@@ -37,7 +37,7 @@ export default function AppPreview() {
         </div>
 
         {/* Right Content Area (Phones Layout) */}
-        <div className="w-full lg:w-[50%] flex items-center justify-center mt-12 lg:mt-0">
+        <div className="hidden lg:flex w-full lg:w-[50%] items-center justify-center mt-12 lg:mt-0">
           <div className="relative flex items-center justify-center w-full">
             {/* Replace the src attributes with your actual images when ready */}
             <img src="https://placehold.co/300x600/f8fafc/94a3b8?text=Phone+1" alt="Crop Advisory" className="w-[22%] -mr-[5%] z-10 mt-12 drop-shadow-xl rounded-[1rem] md:rounded-[2rem] border-4 border-gray-100 object-cover" />

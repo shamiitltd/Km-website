@@ -1,10 +1,10 @@
 export default function Footer() {
   return (
     <footer className="bg-[#0A2213] text-gray-300 pt-12 pb-6 px-6 md:px-12 lg:px-24 w-full border-t border-[#1a4a2e]">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-8 mb-12">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-8 mb-12">
         
-        {/* Column 1: Brand & About (Takes up 2 cols on large screens for spacing) */}
-        <div className="lg:col-span-1 pr-0 lg:pr-10">
+        {/* Column 1: Brand & About (Takes up 2 cols on tablet, 1 on large screens) */}
+        <div className="sm:col-span-2 lg:col-span-1 pr-0 lg:pr-10">
           <div className="flex items-center gap-2 mb-2">
             <svg className="w-8 h-8 text-[#54B435]" fill="currentColor" viewBox="0 0 24 24">
               <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66l.95-2.3c3.47.5 7.64-.17 11.23-3.08C20 15 21.5 11.5 17 8zM9.5 14c2.5-3 6.5-4 10-4-1.5 3-4 5-8.5 5l-1.5-1z" />
