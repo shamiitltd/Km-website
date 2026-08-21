@@ -6,15 +6,21 @@ export default function AboutUsHero() {
     <section className="relative w-full min-h-[550px] flex items-center bg-white overflow-hidden">
       
       <div className="absolute inset-0 w-full h-full z-0 flex justify-end">
-        {/* Placeholder for the About Us Hero Image (Farmer with Phone) */}
+        {/* Mobile Background */}
+        <img
+          src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+          alt="About Us Mobile Background"
+          className="w-full h-full object-cover lg:hidden opacity-30"
+        />
+        {/* Desktop Background */}
         <img
           src={features_background}
           alt="About Us Hero"
-          className="w-full lg:w-[63%] h-full object-cover object-center"
+          className="hidden lg:block w-full lg:w-[63%] h-full object-cover object-center"
         />
       </div>
 
-      <div className="absolute inset-0 bg-gradient-to-r from-white via-white to-transparent z-10 w-full lg:w-[75%]"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-white/10 to-transparent lg:from-white lg:via-white lg:to-transparent z-10 w-full lg:w-[75%]"></div>
 
       {/* Content Container */}
       <div className="max-w-[95rem] mx-auto px-10 md:px-12 lg:px-24 w-full relative z-20">

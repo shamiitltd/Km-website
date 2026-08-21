@@ -2,10 +2,16 @@ import heroBg from "../assets/hero.png";
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full py-12 lg:py-0 px-6 md:px-12 lg:px-24 overflow-hidden flex items-center h-[calc(100vh-4.75rem)] min-h-[550px] max-h-[750px]">
-      {/* Background Image (Custom position to cut some sky but save the bottom and head) */}
+    <section className="relative w-full py-16 lg:py-0 px-6 md:px-12 lg:px-24 overflow-hidden flex items-center lg:h-[calc(100vh-4.75rem)] min-h-[600px] lg:max-h-[750px] bg-[#FAFCFA]">
+      {/* Background Image for Mobile (Simple Farm) */}
       <div
-        className="absolute inset-0 z-0 bg-cover bg-[center_15%] bg-no-repeat"
+        className="absolute inset-0 z-0 bg-cover bg-[center_bottom] bg-no-repeat lg:hidden opacity-30"
+        style={{ backgroundImage: `url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')` }}
+      ></div>
+
+      {/* Background Image for Desktop (Original Hero) */}
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-[center_15%] bg-no-repeat hidden lg:block"
         style={{ backgroundImage: `url(${heroBg})` }}
       ></div>
 
@@ -15,10 +21,10 @@ export default function HeroSection() {
         <div className="w-full lg:w-[55%] mb-12 lg:mb-0 relative">
           
           {/* 2026 Technique: Localized soft backdrop glow exactly conforming to the text boundaries */}
-          <div className="absolute -inset-y-12 -inset-x-12 md:-inset-x-24 z-0 bg-gradient-to-r from-white via-white/85 to-transparent blur-2xl opacity-95"></div>
+          <div className="absolute -inset-y-12 -inset-x-12 md:-inset-x-24 z-0 bg-gradient-to-r from-white/40 via-white/10 to-transparent lg:from-white lg:via-white/85 lg:to-transparent blur-2xl opacity-95"></div>
 
           <div className="relative z-10 pr-0 lg:pr-8">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] mb-6">
               Your <span className="text-[#2C8C44]">AI-Powered</span>
               <br />
               Farming Companion
@@ -108,9 +114,9 @@ export default function HeroSection() {
         </div>
 
         {/* Right Content Area (Image is now in background, keeping the Trusted Badge) */}
-        <div className="w-full lg:w-[50%] relative flex-col justify-center lg:justify-start items-center h-full min-h-[300px]">
-          {/* Trusted Badge (Floating over the farmer's elbow with transparency) */}
-          <div className="absolute bottom-[-50%] lg:-left-20 z-30 bg-[#123C26]/85 backdrop-blur-md p-4 rounded-2xl shadow-2xl flex items-center space-x-4 border border-[#2C8C44]/30 hover:scale-105 transition-transform cursor-pointer">
+        <div className="w-full lg:w-[50%] relative flex justify-center lg:justify-start items-center lg:h-full lg:min-h-[300px] mt-8 lg:mt-0">
+          {/* Trusted Badge (Floating on desktop, relative on mobile) */}
+          <div className="relative lg:absolute lg:bottom-[10%] lg:-left-20 z-30 bg-[#123C26]/85 backdrop-blur-md p-4 rounded-2xl shadow-2xl flex items-center space-x-4 border border-[#2C8C44]/30 hover:scale-105 transition-transform cursor-pointer">
             <div className="text-white">
               <p className="text-xs text-gray-300">Trusted by</p>
               <p className="font-bold text-sm whitespace-nowrap">

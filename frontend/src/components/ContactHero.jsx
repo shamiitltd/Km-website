@@ -7,16 +7,22 @@ export default function ContactHero() {
     <section className="relative w-full min-h-[550px] flex items-center bg-[#FAFCFA] overflow-hidden pt-12 md:pt-0 border-b border-gray-100">
       {/* Background Image on Right */}
       <div className="absolute inset-0 w-full h-full z-0 flex justify-end">
-        {/* User will replace this src with their specific farmer background image */}
+        {/* Mobile Background */}
+        <img
+          src="https://images.unsplash.com/photo-1495908333425-29a1e0918c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+          alt="Contact Mobile Background"
+          className="w-full h-full object-cover lg:hidden opacity-30"
+        />
+        {/* Desktop Background */}
         <img
           src={features_background}
           alt="Farmer Background"
-          className="w-full lg:w-[68%] h-full object-cover object-center opacity-90"
+          className="hidden lg:block w-full lg:w-[68%] h-full object-cover object-center opacity-90"
         />
       </div>
 
       {/* Gradient Overlay to blend left text area */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#FAFCFA] via-[#FAFCFA] to-transparent z-10 w-full lg:w-[75%]"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-[#FAFCFA]/40 via-[#FAFCFA]/10 to-transparent lg:from-[#FAFCFA] lg:via-[#FAFCFA] lg:to-transparent z-10 w-full lg:w-[75%]"></div>
 
       {/* Main Content Container */}
       <div className="max-w-[95rem] mx-auto px-6 md:px-12 lg:px-16 xl:px-24 w-full relative z-20 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-0 pb-16 lg:pb-0">

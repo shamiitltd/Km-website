@@ -230,7 +230,7 @@ export default function BlogList() {
               </div>
               
               {/* Phone Mockup Illustration */}
-              <div className="absolute -right-10 -bottom-16 w-56 h-[300px] bg-white rounded-[2rem] shadow-2xl border-[6px] border-gray-800 flex flex-col overflow-hidden rotate-[-5deg]">
+              <div className="hidden lg:flex absolute -right-10 -bottom-16 w-56 h-[300px] bg-white rounded-[2rem] shadow-2xl border-[6px] border-gray-800 flex-col overflow-hidden rotate-[-5deg]">
                  <div className="bg-[#F2F9F3] h-12 w-full flex items-center justify-between px-4 shrink-0 border-b border-gray-100">
                     <span className="text-[10px] font-bold text-[#123C26]">Kisan Mitra</span>
                     <div className="w-12 h-3.5 bg-black rounded-full"></div>
