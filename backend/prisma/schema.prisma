@@ -17,3 +17,15 @@ model Blog {
   imageUrl  String
   createdAt DateTime @default(now())
 }
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  fullName  String
+  email     String
+  mobile    String?
+  subject   String
+  message   String
+  status    String   @default("UNREAD")
+  createdAt DateTime @default(now())
+}
+

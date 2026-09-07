@@ -4,6 +4,7 @@ const cors = require('cors');
 
 // Import routes
 const blogRoutes = require('./routes/blogRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Routes
 app.use('/api/blogs', blogRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Server Init
 app.listen(PORT, () => {
