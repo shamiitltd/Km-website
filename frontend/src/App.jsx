@@ -11,7 +11,10 @@ import BlogPost from './pages/BlogPost'
 import Contact from './pages/Contact'
 import AdminBlog from './pages/AdminBlog'
 import NotFound from './pages/NotFound'
+import ComingSoon from './pages/ComingSoon'
+import TermsAndConditions from './pages/TermsAndConditions'
 import Footer from './components/Footer'
+import ScrollToTop from './components/ScrollToTop'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 function App() {
@@ -19,6 +22,7 @@ function App() {
   return (
     <>
       <BrowserRouter>
+        <ScrollToTop />
         <NavBar />
         <Routes>
           <Route path='/' element={<Home />} />
@@ -26,6 +30,11 @@ function App() {
           <Route path='/how-it-works' element={<HowItWorks />} />
           <Route path='/about' element={<AboutUs />} />
           <Route path='/pricing' element={<Pricing />} />
+          <Route path='/careers' element={<ComingSoon type="careers" />} />
+          <Route path='/refund-policy' element={<ComingSoon type="refund" />} />
+          <Route path='/coming-soon' element={<ComingSoon />} />
+          <Route path='/terms' element={<TermsAndConditions />} />
+          <Route path='/terms-and-conditions' element={<TermsAndConditions />} />
           <Route path='/blog' element={<Blog />} />
           <Route path='/blog/:id' element={<BlogPost />} />
           <Route path='/admin/blog/new' element={<AdminBlog />} />

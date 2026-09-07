@@ -5,3 +5,20 @@ html, body, #root {
   max-width: 100vw;
   width: 100%;
 }
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-20px) scale(1.04);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 9s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: floatSlow 12s ease-in-out 3s infinite;
+}
