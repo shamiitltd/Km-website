@@ -58,7 +58,7 @@ jobs:
 
             echo "Starting deployment..."
 
-            cd /var/www/km-web
+            cd /home/web/km.shamiit.com
 
             echo "Fetching latest code..."
             git fetch origin main
