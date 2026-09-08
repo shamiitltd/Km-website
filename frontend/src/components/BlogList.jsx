@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { resolveImageUrl } from '../utils/imageUrlHelper';
 
 export default function BlogList() {
   const [blogs, setBlogs] = useState([]);
@@ -126,7 +127,7 @@ export default function BlogList() {
                   {/* Image */}
                   <div className="w-full md:w-[320px] shrink-0 overflow-hidden h-[240px] md:h-auto relative">
                     <img 
-                      src={post.imageUrl || fallbackImage} 
+                      src={resolveImageUrl(post.imageUrl)} 
                       onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
                       alt={post.title} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
@@ -181,7 +182,7 @@ export default function BlogList() {
                     <div className="relative shrink-0 w-24 h-24">
                       <div className="w-full h-full rounded-xl overflow-hidden">
                         <img 
-                          src={post.imageUrl || fallbackImage} 
+                          src={resolveImageUrl(post.imageUrl)} 
                           onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
                           alt={post.title} 
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 

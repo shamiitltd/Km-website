@@ -8,14 +8,26 @@ datasource db {
 }
 
 model Blog {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  category  String
-  author    String
-  readTime  String
-  imageUrl  String
-  createdAt DateTime @default(now())
+  id              String   @id @default(uuid())
+  title           String
+  content         String
+  category        String
+  author          String
+  readTime        String
+  imageUrl        String
+  status          String   @default("PUBLISHED") // "DRAFT" | "PUBLISHED" | "SCHEDULED"
+  publishDate     DateTime @default(now())
+  tags            String?  // JSON string or comma-separated tags
+  slug            String?  @unique // SEO-friendly URL slug (e.g. "ai-crop-disease-detection")
+  canonicalUrl    String?  // Canonical URL override
+  ogImageUrl      String?  // Custom OG Image URL override
+  seoKeywords     String?  // Comma-separated focus keywords
+  isNoIndex       Boolean  @default(false) // Toggle search engine indexing
+  isNoFollow      Boolean  @default(false) // Toggle link following
+  metaTitle       String?
+  metaDescription String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt @default(now())
 }
 
 model ContactMessage {
@@ -29,3 +41,97 @@ model ContactMessage {
   createdAt DateTime @default(now())
 }
 
+model NewsletterSubscriber {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  source      String   @default("general")
+  sourceLabel String?
+  createdAt   DateTime @default(now())
+}
+
+model BroadcastLog {
+  id             String   @id @default(uuid())
+  subject        String
+  category       String   @default("ANNOUNCEMENT")
+  heading        String
+  recipientCount Int
+  sentCount      Int      @default(0)
+  failedCount    Int      @default(0)
+  status         String   @default("COMPLETED")
+  sentAt         DateTime @default(now())
+}
+
+model PageView {
+  id         String   @id @default(uuid())
+  visitorId  String   // Persistent anonymous client UUID (localStorage)
+  sessionId  String   // Session UUID (sessionStorage)
+  path       String   // e.g. "/pricing"
+  title      String?  // Page title
+  referrer   String?  // e.g. "https://google.com" or "Direct"
+  deviceType String   @default("desktop") // "desktop" | "mobile" | "tablet"
+  browser    String?  // "Chrome", "Safari", "Firefox", etc.
+  os         String?  // "Windows", "iOS", "Android", etc.
+  country    String?  @default("IN")
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([visitorId])
+  @@index([path])
+  @@index([sessionId])
+}
+
+model ActiveSession {
+  sessionId    String   @id
+  visitorId    String
+  currentPath  String   @default("/")
+  deviceType   String   @default("desktop")
+  browser      String?
+  os           String?
+  lastActiveAt DateTime @default(now())
+
+  @@index([lastActiveAt])
+}
+
+model SiteSeoSettings {
+  id                      String   @id @default("default")
+  siteTitle               String   @default("KisanMitra - AI-Powered Smart Farming Companion")
+  siteDescription         String   @default("Empowering farmers across India with AI-driven crop disease diagnostics, real-time weather alerts, APMC mandi market prices, and precision agricultural guidance.")
+  canonicalDomain         String   @default("https://kisanmitra.in")
+  defaultOgImage          String   @default("/assets/hero-D2VKPB0P.png")
+  googleVerificationCode  String?  // Google Search Console verification token
+  bingVerificationCode    String?  // Bing Webmaster Tools verification token
+  otherVerificationCode   String?  // Additional webmaster verification token
+  robotsIndexing          String   @default("index, follow") // "index, follow" | "noindex, nofollow"
+  twitterHandle           String?  @default("@KisanMitra")
+  organizationName        String   @default("KisanMitra Technologies")
+  contactEmail            String   @default("support@kisanmitra.com")
+  contactPhone            String   @default("+919548450539")
+  updatedAt               DateTime @updatedAt @default(now())
+}
+
+model UrlRedirect {
+  id         String   @id @default(uuid())
+  sourceUrl  String   @unique // The incoming URL to redirect from (e.g. "/blog/old-slug" or "/services")
+  targetUrl  String   // The canonical destination URL (e.g. "/blog/new-slug" or "/features")
+  statusCode Int      @default(301) // HTTP 301 Permanent or 302 Temporary
+  isActive   Boolean  @default(true)
+  hitCount   Int      @default(0) // Telemetry count of redirects served
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt @default(now())
+
+  @@index([sourceUrl])
+}
+
+model Comment {
+  id          String   @id @default(uuid())
+  authorName  String
+  authorEmail String
+  content     String
+  blogId      String?
+  blogTitle   String?
+  status      String   @default("APPROVED") // "APPROVED" | "PENDING" | "SPAM"
+  createdAt   DateTime @default(now())
+
+  @@index([blogId])
+  @@index([createdAt])
+}

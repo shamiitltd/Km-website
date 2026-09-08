@@ -1,0 +1,9 @@
+# KisanMitra Static Robots Directives
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin
+Disallow: /api/
+
+# Dynamic XML Sitemap
+Sitemap: https://kisanmitra.in/sitemap.xml

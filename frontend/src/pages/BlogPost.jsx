@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
+import { resolveImageUrl } from '../utils/imageUrlHelper';
+import SeoManager from '../components/SeoManager';
 
 export default function BlogPost() {
   const { id } = useParams();
@@ -17,6 +19,15 @@ export default function BlogPost() {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
         const response = await fetch(`${apiUrl}/blogs/${id}`);
         
+        // Handle 301 Permanent Redirect (e.g. old slug)
+        if (response.status === 301) {
+          const redirectData = await response.json();
+          if (redirectData && redirectData.redirect) {
+            navigate(redirectData.redirect, { replace: true });
+            return;
+          }
+        }
+
         if (!response.ok) {
           throw new Error('Post not found');
         }
@@ -32,7 +43,7 @@ export default function BlogPost() {
     };
 
     fetchPost();
-  }, [id]);
+  }, [id, navigate]);
 
   if (loading) {
     return (
@@ -59,11 +70,12 @@ export default function BlogPost() {
 
   return (
     <article className="w-full bg-white min-h-screen">
+      <SeoManager customMeta={{ isBlogDetail: true, ...post }} />
       {/* Hero Section */}
       <div 
         className="w-full pt-15 pb-24 px-6 md:px-12 relative flex flex-col justify-center items-center min-h-[55vh]"
         style={{
-          backgroundImage: `url(${post.imageUrl || fallbackImage})`,
+          backgroundImage: `url(${resolveImageUrl(post.imageUrl)})`,
           backgroundSize: 'cover',
         }}
       >
@@ -107,6 +119,28 @@ export default function BlogPost() {
                      prose-blockquote:border-l-4 prose-blockquote:border-[#2C8C44] prose-blockquote:bg-gray-50 prose-blockquote:p-6 prose-blockquote:text-gray-800 prose-blockquote:font-medium prose-blockquote:not-italic prose-blockquote:rounded-r-xl"
           dangerouslySetInnerHTML={{ __html: cleanHTML }}
         />
+
+        {/* Render Tags if present */}
+        {post.tags && (
+          <div className="mt-12 pt-6 border-t border-gray-200 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mr-1">Tags:</span>
+            {(() => {
+              let parsedTags = [];
+              try {
+                parsedTags = typeof post.tags === 'string' && post.tags.startsWith('[')
+                  ? JSON.parse(post.tags)
+                  : post.tags.split(',').map(t => t.trim()).filter(Boolean);
+              } catch (e) {
+                parsedTags = [];
+              }
+              return parsedTags.map(tag => (
+                <span key={tag} className="text-xs font-semibold px-3 py-1.5 bg-[#EAF7ED] text-[#123C26] rounded-lg border border-[#2C8C44]/20">
+                  #{tag}
+                </span>
+              ));
+            })()}
+          </div>
+        )}
       </div>
     </article>
   );

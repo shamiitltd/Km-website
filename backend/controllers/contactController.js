@@ -1,5 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
-const { sendContactEmail } = require('../services/brevoService');
+const { sendContactEmail } = require('../services/emailService');
 
 let prisma;
 try {
@@ -47,7 +47,7 @@ const submitContactForm = async (req, res) => {
       }
     }
 
-    // 2. Dispatch email via Brevo HTTP API
+    // 2. Dispatch email via Custom Domain SMTP (mail.shamiit.com)
     const emailResult = await sendContactEmail({
       fullName: fullName.trim(),
       email: email.trim().toLowerCase(),
@@ -59,7 +59,7 @@ const submitContactForm = async (req, res) => {
     if (!emailResult.success) {
       return res.status(502).json({
         success: false,
-        error: emailResult.error || 'Failed to dispatch email via Brevo.'
+        error: emailResult.error || 'Failed to dispatch email via SMTP.'
       });
     }
 
