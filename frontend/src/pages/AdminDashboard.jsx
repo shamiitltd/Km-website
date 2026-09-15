@@ -1,39 +1,28 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminBlog from './AdminBlog';
 import AdminBroadcast from './AdminBroadcast';
 
 export default function AdminDashboard({ defaultSection = 'dashboard', defaultSubSection = 'all' }) {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Authentication State
-  const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState(() => {
+    return sessionStorage.getItem('km_admin_auth') === 'true' ? 'admin123' : '';
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem('km_admin_auth') === 'true';
+  });
   const [authError, setAuthError] = useState('');
 
   // Active Navigation Module & Sub-Section State
-  const paramTab = searchParams.get('tab');
-  const paramSub = searchParams.get('sub');
-  const [activeSection, setActiveSection] = useState(paramTab || defaultSection);
-  const [activeSubSection, setActiveSubSection] = useState(paramSub || defaultSubSection);
+  const activeSection = searchParams.get('tab') || defaultSection;
+  const activeSubSection = searchParams.get('sub') || defaultSubSection;
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // Sync state with URL params
-  useEffect(() => {
-    if (paramTab && paramTab !== activeSection) {
-      setActiveSection(paramTab);
-    }
-    if (paramSub && paramSub !== activeSubSection) {
-      setActiveSubSection(paramSub);
-    }
-  }, [paramTab, paramSub]);
-
   const handleNavigate = (section, subSection = null) => {
-    setActiveSection(section);
     if (subSection) {
-      setActiveSubSection(subSection);
       setSearchParams({ tab: section, sub: subSection });
     } else {
       setSearchParams({ tab: section });
@@ -43,10 +32,7 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
 
   // Analytics State
   const [stats, setStats] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState(7);
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const [lastRefreshedAt, setLastRefreshedAt] = useState(new Date());
   const [hoveredTrendPoint, setHoveredTrendPoint] = useState(null);
   const autoRefreshTimerRef = useRef(null);
 
@@ -89,18 +75,8 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
 
   // Subscriber Hub State
   const [subscribers, setSubscribers] = useState([]);
-  const [isLoadingSubscribers, setIsLoadingSubscribers] = useState(false);
 
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-  // Check persisted admin session on mount
-  useEffect(() => {
-    const savedAuth = sessionStorage.getItem('km_admin_auth');
-    if (savedAuth === 'true') {
-      setIsAuthenticated(true);
-      setPassword('admin123');
-    }
-  }, []);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -124,8 +100,7 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
   };
 
   // Fetch Analytics Stats
-  const fetchStats = async (showLoading = false) => {
-    if (showLoading) setIsLoading(true);
+  const fetchStats = useCallback(async () => {
     try {
       const res = await fetch(`${apiUrl}/analytics/stats?range=${timeRange}`, {
         headers: {
@@ -135,20 +110,17 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
       if (res.ok) {
         const data = await res.json();
         setStats(data);
-        setLastRefreshedAt(new Date());
       } else if (res.status === 401) {
         setIsAuthenticated(false);
         sessionStorage.removeItem('km_admin_auth');
       }
     } catch (err) {
       console.error('Failed to fetch analytics stats:', err);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [apiUrl, password, timeRange]);
 
   // Fetch SEO Settings and 301 Redirects
-  const fetchSeoData = async () => {
+  const fetchSeoData = useCallback(async () => {
     try {
       const [settingsRes, redirectsRes] = await Promise.all([
         fetch(`${apiUrl}/seo/settings`),
@@ -169,10 +141,10 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
     } catch (err) {
       console.error('Failed to load SEO configuration:', err);
     }
-  };
+  }, [apiUrl, password]);
 
   // Fetch Media files
-  const fetchMedia = async () => {
+  const fetchMedia = useCallback(async () => {
     setIsLoadingMedia(true);
     try {
       const res = await fetch(`${apiUrl}/blogs/media`, {
@@ -187,10 +159,10 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
     } finally {
       setIsLoadingMedia(false);
     }
-  };
+  }, [apiUrl, password]);
 
   // Fetch Categories & Tags Summary
-  const fetchTaxonomy = async () => {
+  const fetchTaxonomy = useCallback(async () => {
     try {
       const [catRes, tagRes] = await Promise.all([
         fetch(`${apiUrl}/blogs/categories-summary`),
@@ -207,10 +179,10 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
     } catch (err) {
       console.error('Failed to fetch taxonomy:', err);
     }
-  };
+  }, [apiUrl]);
 
   // Fetch Comments
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     setIsLoadingComments(true);
     try {
       const res = await fetch(`${apiUrl}/blogs/comments/all`, {
@@ -225,11 +197,10 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
     } finally {
       setIsLoadingComments(false);
     }
-  };
+  }, [apiUrl, password]);
 
   // Fetch Subscribers
-  const fetchSubscribers = async () => {
-    setIsLoadingSubscribers(true);
+  const fetchSubscribers = useCallback(async () => {
     try {
       const res = await fetch(`${apiUrl}/newsletter/subscribers`, {
         headers: { 'Authorization': `Bearer ${password || 'admin123'}` }
@@ -240,38 +211,37 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
       }
     } catch (err) {
       console.error('Failed to fetch subscribers:', err);
-    } finally {
-      setIsLoadingSubscribers(false);
     }
-  };
+  }, [apiUrl, password]);
 
   // Initial and reactive data fetching
   useEffect(() => {
     if (isAuthenticated) {
-      fetchStats(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchStats();
       fetchSeoData();
       fetchTaxonomy();
       if (activeSection === 'media') fetchMedia();
       if (activeSection === 'comments') fetchComments();
       if (activeSection === 'newsletter') fetchSubscribers();
     }
-  }, [isAuthenticated, timeRange, activeSection]);
+  }, [isAuthenticated, activeSection, fetchStats, fetchSeoData, fetchTaxonomy, fetchMedia, fetchComments, fetchSubscribers]);
 
   // 10-second auto-refresh for live traffic monitoring
   useEffect(() => {
-    if (!isAuthenticated || !autoRefresh) {
+    if (!isAuthenticated) {
       if (autoRefreshTimerRef.current) clearInterval(autoRefreshTimerRef.current);
       return;
     }
 
     autoRefreshTimerRef.current = setInterval(() => {
-      fetchStats(false);
+      fetchStats();
     }, 10000);
 
     return () => {
       if (autoRefreshTimerRef.current) clearInterval(autoRefreshTimerRef.current);
     };
-  }, [isAuthenticated, autoRefresh, timeRange]);
+  }, [isAuthenticated, fetchStats]);
 
   // Save SEO Settings
   const handleSaveSeo = async (e) => {
@@ -429,19 +399,6 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
     document.body.removeChild(link);
   };
 
-  // Format Helpers
-  const formatRelativeTime = (isoString) => {
-    if (!isoString) return 'Just now';
-    const seconds = Math.floor((new Date() - new Date(isoString)) / 1000);
-    if (seconds < 10) return 'Just now';
-    if (seconds < 60) return `${seconds}s ago`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  };
 
   // SVG Trend Chart Dimensions
   const chartData = useMemo(() => {
@@ -1178,7 +1135,7 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setActiveSubSection('broadcast')}
+                    onClick={() => handleNavigate('newsletter', 'broadcast')}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${
                       activeSubSection !== 'subscribers'
                         ? 'bg-[#123C26] text-white shadow-xs'
@@ -1193,7 +1150,7 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                   <button
                     type="button"
                     onClick={() => {
-                      setActiveSubSection('subscribers');
+                      handleNavigate('newsletter', 'subscribers');
                       fetchSubscribers();
                     }}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${

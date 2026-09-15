@@ -1,5 +1,5 @@
 import profile_one from "../assets/profile_one.png";
-import { showComingSoon } from "./ComingSoonModal";
+import { showComingSoon } from "../utils/comingSoon";
 
 export default function WhyFarmersLove() {
   const benefits = [

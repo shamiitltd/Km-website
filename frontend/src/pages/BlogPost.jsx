@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import { resolveImageUrl } from '../utils/imageUrlHelper';
@@ -10,8 +10,6 @@ export default function BlogPost() {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  const fallbackImage = "https://images.unsplash.com/photo-1592841200221-a6898f307baa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80";
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -125,15 +123,15 @@ export default function BlogPost() {
           <div className="mt-12 pt-6 border-t border-gray-200 flex flex-wrap items-center gap-2">
             <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mr-1">Tags:</span>
             {(() => {
-              let parsedTags = [];
+              let parsedTags;
               try {
                 parsedTags = typeof post.tags === 'string' && post.tags.startsWith('[')
                   ? JSON.parse(post.tags)
                   : post.tags.split(',').map(t => t.trim()).filter(Boolean);
-              } catch (e) {
+              } catch {
                 parsedTags = [];
               }
-              return parsedTags.map(tag => (
+              return (parsedTags || []).map(tag => (
                 <span key={tag} className="text-xs font-semibold px-3 py-1.5 bg-[#EAF7ED] text-[#123C26] rounded-lg border border-[#2C8C44]/20">
                   #{tag}
                 </span>

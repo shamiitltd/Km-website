@@ -1,6 +1,4 @@
-import React from 'react';
 import features_background from "../assets/features_background.png"; // Placeholder for the farmer background
-import cta_plant from "../assets/cta_plant.png"; // Sprout image for the card
 
 export default function ContactHero() {
   return (

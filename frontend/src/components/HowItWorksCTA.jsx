@@ -1,6 +1,5 @@
-import React from "react";
 import cta_hiw from "../assets/cta_hiw.png";
-import { showComingSoon } from "./ComingSoonModal";
+import { showComingSoon } from "../utils/comingSoon";
 
 export default function HowItWorksCTA() {
   return (

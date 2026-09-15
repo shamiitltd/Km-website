@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import farmBgLocal from '../assets/farm_bg.jpg';
 import cta_plant from '../assets/cta_plant.png';
 import WeatherRadarMap from '../components/WeatherRadarMap';
-import { showComingSoon } from '../components/ComingSoonModal';
+import { showComingSoon } from '../utils/comingSoon';
 
 // API Base resolution
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -162,26 +162,6 @@ function ClockIcon({ className = 'w-4 h-4' }) {
   );
 }
 
-function ExternalLinkIcon({ className = 'w-4 h-4' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-      <polyline points="15 3 21 3 21 9" />
-      <line x1="10" y1="14" x2="21" y2="3" />
-    </svg>
-  );
-}
-
-function CloudRainIcon({ className = 'w-4 h-4' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
-      <path d="M16 14v6" />
-      <path d="M8 14v6" />
-      <path d="M12 16v6" />
-    </svg>
-  );
-}
 
 function TrendingUpIcon({ className = 'w-4 h-4' }) {
   return (
@@ -641,11 +621,6 @@ export default function Weather() {
   const [locating, setLocating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [unit, setUnit] = useState('C'); // 'C' or 'F'
-  const [mapType, setMapType] = useState('satellite'); // 'satellite' (hybrid), 'terrain', 'roadmap'
-  const [googleZoom, setGoogleZoom] = useState(12);
-  const [showRadarOverlay, setShowRadarOverlay] = useState(true);
-  const [radarPlaying, setRadarPlaying] = useState(true);
-  const [radarFrame, setRadarFrame] = useState(0);
   const [selectedHourlyIndex, setSelectedHourlyIndex] = useState(0);
   const [selectedRainDayIndex, setSelectedRainDayIndex] = useState(1);
   const [activeModal, setActiveModal] = useState(null); // '24h' | 'detailed7d' | 'alerts' | 'cropAdvisory' | 'api' | 'rainfallProb' | 'downloadApp' | 'demo' | 'frost'
@@ -680,18 +655,9 @@ export default function Weather() {
     return valC;
   };
 
-  // Helper for Google Maps Embed URL
-  const getGoogleMapsEmbedUrl = () => {
-    const lat = weatherData?.location?.latitude ?? 28.58;
-    const lon = weatherData?.location?.longitude ?? 77.33;
-    const locName = weatherData?.location?.name || 'Noida';
-    const typeCode = mapType === 'satellite' ? 'h' : mapType === 'terrain' ? 'p' : 'm';
-    const mapsBase = import.meta.env.VITE_GOOGLE_MAPS_URL || 'https://maps.google.com/maps';
-    return `${mapsBase}?q=${lat},${lon}+(${encodeURIComponent(locName)})&t=${typeCode}&z=${googleZoom}&ie=UTF8&iwloc=B&output=embed`;
-  };
 
   // Real-time backend fetch
-  const fetchWeather = async (params = { city: 'Noida' }, isRefresh = false) => {
+  const fetchWeather = useCallback(async (params = { city: 'Noida' }, isRefresh = false) => {
     if (isRefresh) {
       setRefreshing(true);
     } else {
@@ -727,11 +693,12 @@ export default function Weather() {
       setLocating(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchWeather({ city: 'Noida' });
-  }, []);
+  }, [fetchWeather]);
 
   // Lock body scrolling while preserving exact scroll position
   useEffect(() => {
@@ -747,19 +714,6 @@ export default function Weather() {
       document.body.classList.remove('modal-open');
     };
   }, [activeModal]);
-
-  // Radar Animation Loop
-  useEffect(() => {
-    let interval = null;
-    if (radarPlaying) {
-      interval = setInterval(() => {
-        setRadarFrame(f => (f + 1) % 4);
-      }, 750);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [radarPlaying]);
 
   // Handle Search Submission
   const handleSearch = (e) => {

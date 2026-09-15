@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function AdminBroadcast({ embedded = false }) {
@@ -8,8 +8,8 @@ export default function AdminBroadcast({ embedded = false }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return embedded || sessionStorage.getItem('km_admin_auth') === 'true';
   });
-  const [activeTab, setActiveTab] = useState('compose'); // 'compose' | 'history'
   const [previewDevice, setPreviewDevice] = useState('desktop'); // 'desktop' | 'mobile'
+  const [activeTab, setActiveTab] = useState('compose'); // 'compose' | 'history'
 
   // Stats
   const [subscriberCount, setSubscriberCount] = useState(0);
@@ -61,20 +61,7 @@ export default function AdminBroadcast({ embedded = false }) {
     }
   };
 
-  useEffect(() => {
-    if (sessionStorage.getItem('km_admin_auth') === 'true') {
-      setIsAuthenticated(true);
-      setPassword('admin123');
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchStats();
-    }
-  }, [isAuthenticated]);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     setIsLoadingStats(true);
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -93,7 +80,14 @@ export default function AdminBroadcast({ embedded = false }) {
     } finally {
       setIsLoadingStats(false);
     }
-  };
+  }, [password]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchStats();
+    }
+  }, [isAuthenticated, fetchStats]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -136,7 +130,7 @@ export default function AdminBroadcast({ embedded = false }) {
       } else {
         setTestStatus({ type: 'error', message: data.error || 'Failed to dispatch test email.' });
       }
-    } catch (err) {
+    } catch {
       setTestStatus({ type: 'error', message: 'Network error while sending test email.' });
     } finally {
       setIsSendingTest(false);
@@ -170,7 +164,7 @@ export default function AdminBroadcast({ embedded = false }) {
       } else {
         setStatus({ type: 'error', message: data.error || 'Failed to dispatch broadcast.' });
       }
-    } catch (err) {
+    } catch {
       setStatus({ type: 'error', message: 'Network error during broadcast transmission.' });
     } finally {
       setIsBroadcasting(false);
@@ -379,6 +373,32 @@ export default function AdminBroadcast({ embedded = false }) {
             <span>{status.message}</span>
           </div>
         )}
+
+        {/* Tab Toggle: Compose vs History */}
+        <div className="flex items-center gap-2 mb-8 bg-white border border-gray-200/80 rounded-2xl p-1 w-fit shadow-xs">
+          <button
+            type="button"
+            onClick={() => setActiveTab('compose')}
+            className={`px-5 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+              activeTab === 'compose'
+                ? 'bg-[#123C26] text-white shadow-xs'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Compose Studio
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('history')}
+            className={`px-5 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+              activeTab === 'history'
+                ? 'bg-[#123C26] text-white shadow-xs'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Broadcast History
+          </button>
+        </div>
 
         {/* TAB 1: COMPOSE & PREVIEW STUDIO */}
         {activeTab === 'compose' && (

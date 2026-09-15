@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import JoditEditor from 'jodit-react';
 import { resolveImageUrl } from '../utils/imageUrlHelper';
@@ -13,15 +13,14 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
   
   // Dashboard Navigation State
   const [activeTab, setActiveTab] = useState(initialMode); // 'write' | 'manage'
+  const [prevInitialMode, setPrevInitialMode] = useState(initialMode);
+  if (initialMode && initialMode !== prevInitialMode) {
+    setPrevInitialMode(initialMode);
+    setActiveTab(initialMode);
+  }
   const [blogs, setBlogs] = useState([]);
   const [isLoadingBlogs, setIsLoadingBlogs] = useState(false);
   const [editId, setEditId] = useState(null);
-
-  useEffect(() => {
-    if (initialMode) {
-      setActiveTab(initialMode);
-    }
-  }, [initialMode]);
 
   const editor = useRef(null);
   const fileInputRef = useRef(null);
@@ -83,16 +82,6 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
     if (!plain) return 0;
     return plain.split(/\s+/).filter(Boolean).length;
   }, [formData.content]);
-
-  /**
-   * Auto-adjust read time based on word count
-   */
-  useEffect(() => {
-    if (wordCount > 0) {
-      const minutes = Math.max(1, Math.ceil(wordCount / 200));
-      setFormData(prev => ({ ...prev, readTime: `${minutes} min read` }));
-    }
-  }, [wordCount]);
 
   /**
    * Smart client-side image compression:
@@ -324,14 +313,7 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
     }
   };
 
-  // Fetch blogs when manage tab is active
-  useEffect(() => {
-    if (isAuthenticated && activeTab === 'manage') {
-      fetchBlogs();
-    }
-  }, [isAuthenticated, activeTab]);
-
-  const fetchBlogs = async () => {
+  const fetchBlogs = useCallback(async () => {
     setIsLoadingBlogs(true);
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -349,7 +331,15 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
     } finally {
       setIsLoadingBlogs(false);
     }
-  };
+  }, [password]);
+
+  // Fetch blogs when manage tab is active
+  useEffect(() => {
+    if (isAuthenticated && activeTab === 'manage') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchBlogs();
+    }
+  }, [isAuthenticated, activeTab, fetchBlogs]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -357,7 +347,14 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
   };
 
   const handleContentChange = (newContent) => {
-    setFormData(prev => ({ ...prev, content: newContent }));
+    const plain = (newContent || '').replace(/<[^>]+>/g, ' ').trim();
+    const count = plain ? plain.split(/\s+/).filter(Boolean).length : 0;
+    const minutes = Math.max(1, Math.ceil(count / 200));
+    setFormData(prev => ({ 
+      ...prev, 
+      content: newContent,
+      readTime: count > 0 ? `${minutes} min read` : prev.readTime
+    }));
   };
 
   // Tag Management
@@ -465,7 +462,7 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
         parsedTags = typeof blog.tags === 'string' && blog.tags.startsWith('[') 
           ? JSON.parse(blog.tags) 
           : blog.tags.split(',').map(t => t.trim()).filter(Boolean);
-      } catch (e) {
+      } catch {
         parsedTags = [];
       }
     }
@@ -545,7 +542,6 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
   };
 
   const inputClasses = "w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2C8C44]/40 focus:border-[#2C8C44] outline-none transition-all text-gray-800 placeholder-gray-400 text-sm";
-  const labelClasses = "block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2";
 
   // Authentication Screen
   if (!isAuthenticated) {
@@ -738,6 +734,16 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
             >
               Save as Draft
             </button>
+
+            {editId && (
+              <button
+                type="button"
+                onClick={requestCancelEdit}
+                className="px-3.5 py-2.5 bg-white hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl border border-gray-200 shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                Cancel Edit
+              </button>
+            )}
 
             {/* Preview Button */}
             <button

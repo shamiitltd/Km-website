@@ -1,5 +1,5 @@
 import heroBg from "../assets/hero.png";
-import { showComingSoon } from "./ComingSoonModal";
+import { showComingSoon } from "../utils/comingSoon";
 
 export default function HeroSection() {
   return (

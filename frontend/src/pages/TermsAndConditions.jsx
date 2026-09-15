@@ -1,21 +1,16 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function TermsAndConditions() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [activeSection, setActiveSection] = useState('section-1');
+const CATEGORIES = [
+  { label: 'All', value: 'All' },
+  { label: 'AI Advisory', value: 'AI' },
+  { label: 'Mandi Prices', value: 'Mandi' },
+  { label: 'Refunds & Billing', value: 'Refund' },
+  { label: 'Grievance Officer', value: 'Grievance' },
+  { label: 'Liability & Law', value: 'Liability' }
+];
 
-  const CATEGORIES = [
-    { label: 'All', value: 'All' },
-    { label: 'AI Advisory', value: 'AI' },
-    { label: 'Mandi Prices', value: 'Mandi' },
-    { label: 'Refunds & Billing', value: 'Refund' },
-    { label: 'Grievance Officer', value: 'Grievance' },
-    { label: 'Liability & Law', value: 'Liability' }
-  ];
-
-  const sections = [
+const SECTIONS = [
     {
       id: 'section-1',
       number: '01',
@@ -283,9 +278,14 @@ export default function TermsAndConditions() {
     }
   ];
 
+export default function TermsAndConditions() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [activeSection, setActiveSection] = useState('section-1');
+
   // Filter sections by search query and category
   const filteredSections = useMemo(() => {
-    let result = sections;
+    let result = SECTIONS;
     if (activeCategory !== 'All') {
       const catLower = activeCategory.toLowerCase();
       result = result.filter(
@@ -305,7 +305,7 @@ export default function TermsAndConditions() {
       );
     }
     return result;
-  }, [searchQuery, activeCategory, sections]);
+  }, [searchQuery, activeCategory]);
 
   const scrollToSection = (id) => {
     setActiveSection(id);
@@ -473,10 +473,10 @@ export default function TermsAndConditions() {
             <div className="bg-white rounded-3xl border border-gray-200/90 p-6 shadow-xs">
               <h3 className="font-bold text-gray-900 text-sm uppercase tracking-wider mb-4 pb-3 border-b border-gray-100 flex items-center justify-between">
                 <span>Table of Contents</span>
-                <span className="text-xs text-gray-500 font-bold bg-[#EAF7ED] text-[#2C8C44] px-2.5 py-0.5 rounded-full">{sections.length} Clauses</span>
+                <span className="text-xs text-gray-500 font-bold bg-[#EAF7ED] text-[#2C8C44] px-2.5 py-0.5 rounded-full">{SECTIONS.length} Clauses</span>
               </h3>
               <nav className="flex flex-col space-y-1 text-sm max-h-[65vh] overflow-y-auto pr-1">
-                {sections.map((sec) => (
+                {SECTIONS.map((sec) => (
                   <button
                     key={sec.id}
                     onClick={() => scrollToSection(sec.id)}

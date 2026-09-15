@@ -1,7 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { resolveImageUrl } from '../utils/imageUrlHelper';
-import { showComingSoon } from './ComingSoonModal';
+import { showComingSoon } from '../utils/comingSoon';
+
+const formatBlogDate = (dateVal) => {
+  if (!dateVal) return 'Recently';
+  const d = new Date(dateVal);
+  return isNaN(d.getTime()) ? 'Recently' : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+};
 
 export default function BlogList() {
   const [blogs, setBlogs] = useState([]);
@@ -148,7 +154,7 @@ export default function BlogList() {
                         </div>
                         <span className="text-[14.5px] font-bold text-gray-700">{post.author}</span>
                       </div>
-                      <div className="text-[14px] text-gray-500 font-medium">{new Date(post.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
+                      <div className="text-[14px] text-gray-500 font-medium">{formatBlogDate(post.createdAt)}</div>
                       <div className="flex items-center gap-1.5 text-[14px] text-gray-500 font-medium">
                         <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         {post.readTime}
@@ -195,7 +201,7 @@ export default function BlogList() {
                     </div>
                     <div className="flex flex-col justify-center">
                       <h4 className="text-[16px] font-bold text-gray-900 leading-tight mb-2 group-hover:text-[#2C8C44] transition-colors line-clamp-2">{post.title}</h4>
-                      <p className="text-[13.5px] text-gray-500 font-medium">{new Date(post.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                      <p className="text-[13.5px] text-gray-500 font-medium">{formatBlogDate(post.createdAt)}</p>
                     </div>
                   </Link>
                 )) : (

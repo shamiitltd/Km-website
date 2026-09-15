@@ -1,5 +1,5 @@
 import appMockupPhones from "../assets/app_mockup_phones.png";
-import { showComingSoon } from "./ComingSoonModal";
+import { showComingSoon } from "../utils/comingSoon";
 
 export default function AppPreview() {
   return (

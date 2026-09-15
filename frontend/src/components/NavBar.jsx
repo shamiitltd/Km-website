@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
-import { showComingSoon } from "./ComingSoonModal";
+import { showComingSoon } from "../utils/comingSoon";
 import logo from "../assets/footer_logo.png"
 export default function NavBar() {
   const [isLangOpen, setIsLangOpen] = useState(false);

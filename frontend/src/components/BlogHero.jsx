@@ -1,6 +1,4 @@
-import React from 'react';
-import features_background from "../assets/features_background.png"; // Placeholder for the farmer background
-
+import features_background from "../assets/features_background.png";
 export default function BlogHero() {
   return (
     <section className="relative w-full min-h-[550px] flex items-center bg-[#FAFCFA] overflow-hidden pt-12 md:pt-0 border-b border-gray-100">

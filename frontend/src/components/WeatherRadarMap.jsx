@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -12,13 +12,16 @@ export default function WeatherRadarMap({
   const canvasLayerRef = useRef(null);
   const animationFrameRef = useRef(null);
   const animTimeRef = useRef(0);
+  const initialLocationRef = useRef(location);
+  const locationRef = useRef(location);
+  useEffect(() => { locationRef.current = location; });
 
   // 1. Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
-    const lat = Number(location?.latitude) || 28.58;
-    const lon = Number(location?.longitude) || 77.33;
+    const lat = Number(initialLocationRef.current?.latitude) || 28.58;
+    const lon = Number(initialLocationRef.current?.longitude) || 77.33;
 
     // Create Leaflet map
     const map = L.map(mapContainerRef.current, {
@@ -45,7 +48,7 @@ export default function WeatherRadarMap({
         <div style="display: flex; align-items: center; gap: 7px; white-space: nowrap; transform: translate(-8px, -8px); pointer-events: none;">
           <div style="width: 15px; height: 15px; background: #1a73e8; border: 2.5px solid #ffffff; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 5px rgba(0,0,0,0.4); flex-shrink: 0;"></div>
           <span style="font-weight: 800; font-size: 13.5px; color: #0f172a; text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff, 0 1px 4px rgba(255,255,255,0.9); font-family: system-ui, -apple-system, sans-serif; letter-spacing: -0.01em;">
-            ${location.name || 'Noida'}
+            ${initialLocationRef.current?.name || 'Noida'}
           </span>
         </div>
       `,
@@ -94,8 +97,8 @@ export default function WeatherRadarMap({
         const size = this._map.getSize();
         ctx.clearRect(0, 0, size.x, size.y);
 
-        const centerLat = Number(location?.latitude) || 28.58;
-        const centerLon = Number(location?.longitude) || 77.33;
+        const centerLat = Number(locationRef.current?.latitude) || 28.58;
+        const centerLon = Number(locationRef.current?.longitude) || 77.33;
         const t = animTimeRef.current;
 
         // Radar Storm Cells positioned around the region matching reference image
@@ -267,7 +270,7 @@ export default function WeatherRadarMap({
     if (canvasLayerRef.current) {
       canvasLayerRef.current.draw();
     }
-  }, [location.latitude, location.longitude, location.name]);
+  }, [location?.latitude, location?.longitude, location?.name, location]);
 
   const handleZoomIn = () => {
     if (mapInstanceRef.current) mapInstanceRef.current.zoomIn();

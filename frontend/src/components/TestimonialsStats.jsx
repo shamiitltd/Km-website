@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import profile_one from "../assets/profile_one.png";
 import profile_two from "../assets/profile_two.png";
 import profile_three from "../assets/profile_three.png";

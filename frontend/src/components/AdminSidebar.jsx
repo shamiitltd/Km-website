@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import farmBgImage from '../assets/farm_bg.jpg';
 
 export default function AdminSidebar({

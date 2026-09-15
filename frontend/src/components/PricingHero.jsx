@@ -1,6 +1,4 @@
-import React from 'react';
 import features_background from "../assets/features_background.png";
-import cta_plant from "../assets/cta_plant.png"; 
 
 export default function PricingHero() {
   return (

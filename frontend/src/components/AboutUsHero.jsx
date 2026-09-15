@@ -1,4 +1,3 @@
-import React from 'react';
 import features_background from "../assets/features_background.png";
 
 export default function AboutUsHero() {

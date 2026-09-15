@@ -1,18 +1,4 @@
-import React, { useState, useEffect } from 'react';
-
-/**
- * Utility helper to trigger the Coming Soon modal from anywhere in the app
- * @param {'app' | 'demo'} type 
- * @param {string} [customTitle]
- * @param {string} [customSubtitle]
- */
-export const showComingSoon = (type = 'app', customTitle = '', customSubtitle = '', source = '') => {
-  window.dispatchEvent(
-    new CustomEvent('km:open-coming-soon', {
-      detail: { type, customTitle, customSubtitle, source }
-    })
-  );
-};
+import { useState, useEffect } from 'react';
 
 export default function ComingSoonModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -117,7 +103,7 @@ export default function ComingSoonModal() {
         setIsShaking(true);
         setTimeout(() => setIsShaking(false), 450);
       }
-    } catch (err) {
+    } catch {
       setErrorMessage('Network connection issue. Please check your connection and try again.');
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 450);

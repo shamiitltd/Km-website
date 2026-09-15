@@ -1,5 +1,5 @@
 import cta_background from "../assets/cta_background.png";
-import { showComingSoon } from "./ComingSoonModal";
+import { showComingSoon } from "../utils/comingSoon";
 
 export default function CTA() {
   return (

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import heroFarmer from "../assets/hero.png";
 import cta_plant from "../assets/cta_plant.png";
-import { showComingSoon } from "../components/ComingSoonModal";
+import { showComingSoon } from "../utils/comingSoon";
 
 // API Base resolution
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -366,7 +366,6 @@ export default function CropAdvisory() {
   const [selectedCategory, setSelectedCategory] = useState("All Crops");
   const [location, setLocation] = useState("Noida, Uttar Pradesh");
   const [activeSubTab, setActiveSubTab] = useState("Overview");
-  const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [gpsDetecting, setGpsDetecting] = useState(false);
 
@@ -392,9 +391,8 @@ export default function CropAdvisory() {
   const [calcResult, setCalcResult] = useState(null);
 
   // Fetch Crop Advisory from backend
-  const fetchAdvisory = async (cropId = selectedCrop, loc = location, lat = null, lon = null) => {
+  const fetchAdvisory = useCallback(async (cropId = selectedCrop, loc = location, lat = null, lon = null) => {
     try {
-      setLoading(true);
       let url = `${API_BASE}/crop-advisory?crop=${encodeURIComponent(cropId)}&location=${encodeURIComponent(loc)}`;
       if (lat && lon) {
         url += `&lat=${lat}&lon=${lon}`;
@@ -407,15 +405,12 @@ export default function CropAdvisory() {
       }
     } catch (err) {
       console.error("Failed to fetch crop advisory:", err);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [selectedCrop, location]);
 
   // Initial automatic geolocation detection
   useEffect(() => {
     if (navigator.geolocation) {
-      setGpsDetecting(true);
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;
@@ -429,30 +424,29 @@ export default function CropAdvisory() {
               const detectedLoc = `${dist.replace(' District', '')}, ${st}`;
               setLocation(detectedLoc);
               fetchAdvisory(selectedCrop, detectedLoc, latitude, longitude);
-              setGpsDetecting(false);
               return;
             }
           } catch {
             // ignore network err
           }
           fetchAdvisory(selectedCrop, location, latitude, longitude);
-          setGpsDetecting(false);
         },
         () => {
           fetchAdvisory(selectedCrop, location);
-          setGpsDetecting(false);
         },
         { timeout: 7000, enableHighAccuracy: true }
       );
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchAdvisory(selectedCrop, location);
     }
-  }, []);
+  }, [fetchAdvisory, location, selectedCrop]);
 
   // Trigger re-fetch on crop or location change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAdvisory(selectedCrop, location);
-  }, [selectedCrop, location]);
+  }, [selectedCrop, location, fetchAdvisory]);
 
   // Handle switching crops
   const handleCropSelect = (cropId) => {
@@ -496,7 +490,7 @@ export default function CropAdvisory() {
   };
 
   // Run fertilizer calculation
-  const handleRunFertilizerCalc = async (acres = calcAcres, soil = calcSoil) => {
+  const handleRunFertilizerCalc = useCallback(async (acres = calcAcres, soil = calcSoil) => {
     try {
       const res = await fetch(
         `${API_BASE}/crop-advisory/calculate-fertilizer?crop=${selectedCrop}&landArea=${acres}&soilType=${encodeURIComponent(soil)}`
@@ -508,13 +502,14 @@ export default function CropAdvisory() {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, [selectedCrop, calcAcres, calcSoil]);
 
   useEffect(() => {
     if (isCalculatorModalOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       handleRunFertilizerCalc(calcAcres, calcSoil);
     }
-  }, [isCalculatorModalOpen, calcAcres, calcSoil, selectedCrop]);
+  }, [isCalculatorModalOpen, calcAcres, calcSoil, handleRunFertilizerCalc]);
 
   // Lock body scrolling when any modal is open
   const isAnyModalOpen = Boolean(
@@ -928,16 +923,16 @@ export default function CropAdvisory() {
                           </div>
 
                           {/* Checklist */}
-                          <ul className="space-y-1.5 text-xs font-medium text-gray-700">
+                          <ul className="space-y-1.5 text-xs font-medium text-gray-700 min-w-0">
                             {(data?.health?.checklist || [
                               "Optimal thermal band",
                               "Low pest incidence",
                               "Adequate soil moisture",
                               "Standard ICAR protocol",
                             ]).map((item, idx) => (
-                              <li key={idx} className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#2C8C44] flex-shrink-0" />
-                                <span className="truncate">{item}</span>
+                              <li key={idx} className="flex items-start gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#2C8C44] flex-shrink-0 mt-1" />
+                                <span className="leading-snug">{item}</span>
                               </li>
                             ))}
                           </ul>

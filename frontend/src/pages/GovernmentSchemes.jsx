@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import farmBgLocal from "../assets/farm_bg.jpg";
 import cta_plant from "../assets/cta_plant.png";
-import { showComingSoon } from "../components/ComingSoonModal";
+import { showComingSoon } from "../utils/comingSoon";
 
 // ============================================================================
 // PURE VECTOR SVG ICONS (NO EMOJIS ANYWHERE)
@@ -84,36 +84,6 @@ function SunIcon({ className = "w-5 h-5" }) {
   );
 }
 
-function TractorIcon({ className = "w-5 h-5" }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="7" cy="17" r="4" />
-      <circle cx="17" cy="17" r="2" />
-      <path d="M15 17h-4" />
-      <path d="M7 13V5h7l3 5h2v7" />
-      <path d="M11 9h3" />
-    </svg>
-  );
-}
-
-function DropletIcon({ className = "w-5 h-5" }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
-    </svg>
-  );
-}
-
-function SproutIcon({ className = "w-5 h-5" }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M7 20h10" />
-      <path d="M10 20c5.5-2.5.8-6.4 3-10" />
-      <path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4.1 5.5.8z" />
-      <path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4.3.9-4.9 2z" />
-    </svg>
-  );
-}
 
 function CheckCircleIcon({ className = "w-4 h-4" }) {
   return (
@@ -837,7 +807,15 @@ export default function GovernmentSchemes() {
   const [selectedBeneficiary, setSelectedBeneficiary] = useState("all");
   const [sortBy, setSortBy] = useState("popular");
   const [selectedSchemeDetail, setSelectedSchemeDetail] = useState(null);
-  const [bookmarkedIds, setBookmarkedIds] = useState([]);
+  const [bookmarkedIds, setBookmarkedIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem("km_bookmarked_schemes");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.warn("Storage access failed:", e);
+      return [];
+    }
+  });
   const [copyToast, setCopyToast] = useState("");
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
@@ -846,18 +824,6 @@ export default function GovernmentSchemes() {
   const [calcLandSize, setCalcLandSize] = useState("2");
   const [calcInterest, setCalcInterest] = useState("solar");
   const [calcResult, setCalcResult] = useState(null);
-
-  // Load saved bookmarks from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("km_bookmarked_schemes");
-      if (saved) {
-        setBookmarkedIds(JSON.parse(saved));
-      }
-    } catch (e) {
-      console.warn("Storage access failed:", e);
-    }
-  }, []);
 
   // Lock body scrolling while preserving exact scroll position
   useEffect(() => {
@@ -941,9 +907,9 @@ export default function GovernmentSchemes() {
   const handleCalculate = (e) => {
     e?.preventDefault();
     const land = parseFloat(calcLandSize) || 0;
-    let recommended = [];
-    let estimatedBenefit = "";
-    let keyTip = "";
+    let recommended;
+    let estimatedBenefit;
+    let keyTip;
 
     if (calcInterest === "solar") {
       recommended = ["pm-kusum"];

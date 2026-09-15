@@ -1,5 +1,5 @@
 import cta_plant from "../assets/cta_plant.png";
-import { showComingSoon } from "./ComingSoonModal";
+import { showComingSoon } from "../utils/comingSoon";
 
 export default function FeaturesCTA() {
   return (
