@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "../assets/logo.png";
+import logo from "../assets/other_logo.png";
 import shamiit from "../assets/shamiit.png";
 
 export default function AboutCompany() {

@@ -3,13 +3,13 @@ import { showComingSoon } from "./ComingSoonModal";
 
 export default function AppPreview() {
   return (
-    <section className="w-full py-8 md:py-16 px-6 md:px-12 lg:px-24 bg-white overflow-hidden">
+    <section className="w-full py-6 md:py-12 px-6 md:px-12 lg:px-24 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8">
         
         {/* Left Content Area */}
         <div className="w-full lg:w-[46%] mb-8 lg:mb-0">
           <h2 className="text-3xl md:text-4xl lg:text-[42px] font-bold text-[#123C26] leading-tight mb-6">
-            Kisan Mitra App –<br />
+            Kisan Mitra App -<br />
             Smart Farming in Your Pocket
           </h2>
           <p className="text-gray-600 text-[17px] md:text-[19px] mb-10 leading-relaxed max-w-xl">

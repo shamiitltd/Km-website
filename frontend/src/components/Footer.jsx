@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-
+import logo from "../assets/footer_logo.png"
 export default function Footer() {
   return (
     <footer className="bg-[#0A2213] text-gray-300 pt-12 pb-6 px-6 md:px-12 lg:px-24 w-full border-t border-[#1a4a2e]">
@@ -7,7 +7,7 @@ export default function Footer() {
         
         {/* Column 1: Brand & About (Takes up 2 cols on tablet, 1 on large screens) */}
         <div className="sm:col-span-2 lg:col-span-1 pr-0 lg:pr-10">
-          <Link to="/" className="inline-flex items-center gap-2 mb-2 group">
+          {/* <Link to="/" className="inline-flex items-center gap-2 mb-2 group">
             <svg className="w-8 h-8 text-[#54B435] group-hover:scale-105 transition-transform" fill="currentColor" viewBox="0 0 24 24">
               <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66l.95-2.3c3.47.5 7.64-.17 11.23-3.08C20 15 21.5 11.5 17 8zM9.5 14c2.5-3 6.5-4 10-4-1.5 3-4 5-8.5 5l-1.5-1z" />
             </svg>
@@ -15,7 +15,8 @@ export default function Footer() {
               <h3 className="text-xl font-bold text-white leading-none mb-1 group-hover:text-[#80D939] transition-colors">KisanMitra</h3>
               <p className="text-[10px] text-gray-400">AI Powered Farming Companion</p>
             </div>
-          </Link>
+          </Link> */}
+          <img src={logo} alt="KisanMitra" className=""/>
           <p className="text-[13px] text-gray-400 mb-4 leading-relaxed">
             Empowering farmers with AI technology to make smarter decisions, increase productivity and build a better future.
           </p>

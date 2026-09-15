@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import { showComingSoon } from "./ComingSoonModal";
-
+import logo from "../assets/footer_logo.png"
 export default function NavBar() {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -21,8 +21,8 @@ export default function NavBar() {
       <div className="flex justify-between items-center w-full">
         {/* Logo Area */}
         <NavLink to="/" className="font-bold text-xl flex items-center gap-2.5 group">
-          <img src="/favicon.png?v=kisanmitra_v1" alt="KisanMitra Logo" className="w-8 h-8 rounded-full object-contain border border-emerald-400/30 group-hover:scale-105 transition-transform bg-white p-0.5" />
-          <span className="group-hover:text-[#80D939] transition-colors">KisanMitra</span>
+          <img src={logo} alt="KisanMitra Logo" className="w-42 h-12" />
+          {/* <span className="group-hover:text-[#80D939] transition-colors">KisanMitra</span> */}
         </NavLink>
 
         {/* Desktop Links Area */}
