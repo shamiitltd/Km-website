@@ -28,15 +28,24 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
 
-      - name: Install dependencies
+      - name: Install backend dependencies
+        working-directory: backend
         run: npm ci
 
-      - name: Run tests
-        run: npm test -- --runInBand
-        continue-on-error: false
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
 
-      - name: Build application
+      - name: Lint frontend
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build frontend
+        working-directory: frontend
         run: npm run build
 
   deploy:
@@ -53,6 +62,7 @@ jobs:
           key: ${{ secrets.PROD_SSH_KEY }}
           port: ${{ secrets.PROD_SSH_PORT }}
           script_stop: true
+
           script: |
             set -e
 
@@ -64,13 +74,19 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            echo "Installing dependencies..."
+            echo "Installing backend dependencies..."
+            cd backend
             npm ci
 
-            echo "Building application..."
+            echo "Installing frontend dependencies..."
+            cd ../frontend
+            npm ci
+
+            echo "Building frontend..."
             npm run build
 
             echo "Restarting application..."
+            cd ../backend
 
             if pm2 describe km-web > /dev/null 2>&1; then
               pm2 reload km-web --update-env
