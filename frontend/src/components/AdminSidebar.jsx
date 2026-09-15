@@ -39,12 +39,12 @@ export default function AdminSidebar({
 
       {/* Main Sidebar Container */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 sm:w-72 bg-[#F7FAF7] border-r border-[#E2EBE2] flex flex-col justify-between transition-transform duration-300 ease-in-out shrink-0 overflow-hidden select-none ${
+        className={`fixed lg:static top-0 left-0 z-50 h-screen lg:h-full w-64 sm:w-72 bg-[#F7FAF7] border-r border-[#E2EBE2] flex flex-col justify-between transition-transform duration-300 ease-in-out shrink-0 overflow-hidden select-none ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* TOP BRANDING & LOGO */}
-        <div className="p-6 pb-4 border-b border-[#E8EFE8] flex items-center justify-between">
+        <div className="p-6 pb-4 border-b border-[#E8EFE8] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             {/* Sprout Logo Graphic matching screenshot */}
             <div className="w-10 h-10 rounded-2xl bg-emerald-100/80 flex items-center justify-center shrink-0 border border-emerald-200 shadow-2xs">
@@ -78,7 +78,7 @@ export default function AdminSidebar({
         </div>
 
         {/* NAVIGATION ITEMS LIST */}
-        <div className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto scrollbar-thin scrollbar-thumb-emerald-100">
+        <div className="flex-1 min-h-0 px-4 py-4 space-y-1.5 overflow-y-auto scrollbar-thin scrollbar-thumb-emerald-100">
           
           {/* 1. DASHBOARD */}
           <button

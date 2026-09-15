@@ -1,4 +1,6 @@
 import profile_one from "../assets/profile_one.png";
+import { showComingSoon } from "./ComingSoonModal";
+
 export default function WhyFarmersLove() {
   const benefits = [
     "Easy to use in local language",
@@ -12,12 +14,15 @@ export default function WhyFarmersLove() {
     <section className="w-full py-10 px-6 md:px-12 lg:px-24 bg-white">
       <div className="max-w-[98rem] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
         {/* Left Video Placeholder */}
-        <div className="relative w-[95%] lg:col-span-6 h-[280px] lg:h-[360px] rounded-[2rem] overflow-hidden bg-gray-200 group cursor-pointer shadow-sm">
+        <div 
+          onClick={() => showComingSoon('demo', 'KisanMitra in Action Walkthrough', 'A comprehensive video walkthrough demonstrating step-by-step smart farming workflows.', 'video_demo_waitlist')}
+          className="relative w-[95%] lg:col-span-6 h-[280px] lg:h-[360px] rounded-[2rem] overflow-hidden bg-gray-200 group cursor-pointer shadow-sm"
+        >
           {/* User can add their video or image thumbnail here */}
           <img
-            src="https://placehold.co/800x600/e2e8f0/94a3b8?text=Video+Placeholder"
-            alt="Video Placeholder"
-            className="w-full h-full object-cover"
+            src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=1200&q=80"
+            alt="Lush green agriculture farm field - Kisan Mitra in Action"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           />
 
           {/* Overlay with Play Button */}
@@ -102,12 +107,12 @@ export default function WhyFarmersLove() {
           </div>
 
           {/* Carousel Dots */}
-          <div className="flex justify-center gap-2 mt-10 xl:mt-auto">
+          {/* <div className="flex justify-center gap-2 mt-10 xl:mt-auto">
             <div className="w-2 h-2 rounded-full bg-[#2C8C44]"></div>
             <div className="w-2 h-2 rounded-full bg-gray-200 cursor-pointer hover:bg-gray-300 transition-colors"></div>
             <div className="w-2 h-2 rounded-full bg-gray-200 cursor-pointer hover:bg-gray-300 transition-colors"></div>
             <div className="w-2 h-2 rounded-full bg-gray-200 cursor-pointer hover:bg-gray-300 transition-colors"></div>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

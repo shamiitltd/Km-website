@@ -104,6 +104,10 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
 
   const handleLogin = (e) => {
     e.preventDefault();
+    if (!password.trim()) {
+      setAuthError('Please enter the administrator password.');
+      return;
+    }
     if (password === 'admin123') {
       setIsAuthenticated(true);
       setAuthError('');
@@ -288,7 +292,7 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
       if (res.ok) {
         const data = await res.json();
         setSeoForm(data.settings);
-        setSeoFeedback({ type: 'success', message: 'SEO settings successfully deployed to live website! ✨' });
+        setSeoFeedback({ type: 'success', message: 'SEO settings successfully deployed to live website!' });
       } else {
         const err = await res.json().catch(() => ({}));
         setSeoFeedback({ type: 'error', message: err.error || 'Failed to update SEO settings.' });
@@ -501,6 +505,9 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
   const pagesInventory = [
     { title: 'Home', path: '/', status: 'Active', indexed: true, priority: '1.0', changefreq: 'daily' },
     { title: 'Features & AI Tools', path: '/features', status: 'Active', indexed: true, priority: '0.9', changefreq: 'weekly' },
+    { title: 'Weather Forecast & Radar', path: '/weather', status: 'Active', indexed: true, priority: '0.9', changefreq: 'daily' },
+    { title: 'Crop Cultivation Advisory', path: '/crop-advisory', status: 'Active', indexed: true, priority: '0.9', changefreq: 'daily' },
+    { title: 'APMC Mandi Market Prices', path: '/market-prices', status: 'Active', indexed: true, priority: '0.9', changefreq: 'daily' },
     { title: 'How It Works', path: '/how-it-works', status: 'Active', indexed: true, priority: '0.8', changefreq: 'weekly' },
     { title: 'Fair Pricing Guarantee', path: '/pricing', status: 'Active', indexed: true, priority: '0.8', changefreq: 'weekly' },
     { title: 'About Us', path: '/about', status: 'Active', indexed: true, priority: '0.7', changefreq: 'monthly' },
@@ -535,12 +542,17 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
           </p>
 
           {authError && (
-            <div className="mb-5 p-3.5 rounded-xl text-xs font-semibold bg-red-50 border border-red-200 text-red-700">
-              {authError}
+            <div className="mb-5 px-4 py-3 rounded-xl text-xs sm:text-sm font-medium bg-gradient-to-r from-rose-50 to-amber-50/60 border border-rose-200/90 text-rose-800 flex items-center gap-2.5 shadow-xs text-left">
+              <div className="w-5 h-5 rounded-full bg-rose-500/15 flex items-center justify-center shrink-0">
+                <svg className="w-3.5 h-3.5 text-rose-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <span>{authError}</span>
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} noValidate className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
                 Administrator Password
@@ -548,18 +560,23 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (authError) setAuthError('');
+                }}
                 placeholder="••••••••"
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2C8C44] focus:border-[#2C8C44] outline-none text-center tracking-[0.2em] font-mono text-base"
-                required
                 autoFocus
               />
             </div>
-            <button
+             <button
               type="submit"
-              className="w-full py-3.5 px-4 bg-gradient-to-r from-[#123C26] to-[#2C8C44] hover:from-[#0E2E1D] hover:to-[#227237] text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-900/20 transition-all cursor-pointer"
+              className="w-full py-3.5 px-4 bg-gradient-to-r from-[#123C26] to-[#2C8C44] hover:from-[#0E2E1D] hover:to-[#227237] text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-900/20 transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              Enter Command Center ➔
+              <span>Enter Command Center</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
             </button>
           </form>
         </div>
@@ -567,9 +584,19 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
     );
   }
 
+  // Calculate unified real-time stats metrics with resilient fallbacks
+  const liveCount = stats?.live?.count ?? 0;
+  const todayVisitors = stats?.today?.uniqueVisitors ?? stats?.today?.visitors ?? 0;
+  const todayViews = stats?.today?.views ?? stats?.today?.pageviews ?? 0;
+  const lifetimeVisitors = stats?.allTime?.uniqueVisitors ?? stats?.lifetime?.visitors ?? 0;
+  const lifetimeViews = stats?.allTime?.totalViews ?? stats?.lifetime?.views ?? 0;
+  const subscribersCount = stats?.hub?.subscribers ?? subscribers.length ?? 0;
+  const publishedBlogs = stats?.hub?.blogsPublished ?? stats?.hub?.publishedBlogs ?? 0;
+  const draftBlogs = stats?.hub?.blogsDraft ?? stats?.hub?.draftBlogs ?? 0;
+
   // 2. Main Executive Unified Dashboard Layout with Left Sidebar
   return (
-    <div className="min-h-screen bg-[#F8FAF8] flex overflow-x-hidden text-gray-900 font-sans">
+    <div className="h-screen w-full bg-[#F8FAF8] flex overflow-hidden text-gray-900 font-sans">
       
       {/* 2.1 AUTHENTIC KISAN MITRA SIDEBAR (Matching reference image strictly) */}
       <AdminSidebar
@@ -579,16 +606,16 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
         isMobileOpen={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
         counts={{
-          posts: stats?.hub?.blogsPublished ?? 0,
-          subscribers: stats?.hub?.subscribers ?? 0,
-          liveVisitors: stats?.live?.count ?? 0,
+          posts: publishedBlogs,
+          subscribers: subscribersCount,
+          liveVisitors: liveCount,
           media: mediaFiles.length,
           comments: comments.length
         }}
       />
 
       {/* 2.2 MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      <div className="flex-1 flex flex-col h-full min-w-0 overflow-y-auto">
         
         {/* TOP EXECUTIVE HEADER BAR */}
         <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200/80 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-2xs">
@@ -605,72 +632,36 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
               </svg>
             </button>
 
-            {/* Breadcrumb Navigator */}
+            {/* Quick Status / Breadcrumb */}
             <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
-              <span className="text-[#134629] font-black uppercase tracking-wider">KisanMitra</span>
+              <span className="text-[#123C26] uppercase tracking-wider">Control Center</span>
               <span>/</span>
-              <span className="text-gray-900 capitalize">
-                {activeSection === 'posts' ? `Posts • ${activeSubSection === 'write' ? 'Write New' : activeSubSection === 'categories' ? 'Categories' : activeSubSection === 'tags' ? 'Tags' : 'All Posts'}` : activeSection}
-              </span>
-            </div>
-
-            {/* Live System Radar Indicator */}
-            <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200/80 rounded-full text-[11px] font-bold text-[#123C26] shadow-2xs">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span>Live Pulse</span>
+              <span className="capitalize text-gray-800">{activeSection}</span>
             </div>
           </div>
 
-          {/* Right Header Controls */}
-          <div className="flex items-center gap-2.5">
-            {/* Auto Refresh Toggle */}
-            <button
-              type="button"
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
-                autoRefresh
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                  : 'bg-gray-100 border-gray-200 text-gray-600'
-              }`}
-              title="Toggle automatic refresh"
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${autoRefresh ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`}></span>
-              <span>Auto (10s)</span>
-            </button>
+          {/* Right Header Badges & Actions */}
+          <div className="flex items-center gap-3">
+            {/* Live active beacon */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-200/60 text-xs font-bold text-emerald-800">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Live: {liveCount} Online</span>
+            </div>
 
-            {/* Manual Refresh */}
-            <button
-              type="button"
-              onClick={() => {
-                fetchStats(true);
-                if (activeSection === 'media') fetchMedia();
-                if (activeSection === 'comments') fetchComments();
-              }}
-              disabled={isLoading}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold rounded-xl border border-gray-200 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
-              title="Refresh data"
-            >
-              <svg className={`w-3.5 h-3.5 text-gray-600 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
-              <span className="hidden sm:inline">Refresh</span>
-            </button>
-
-            {/* Public Site Link */}
+            {/* Quick Public Site Link */}
             <Link
               to="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-[#EAF7ED] text-gray-700 hover:text-[#123C26] text-xs font-bold rounded-xl border border-gray-200 transition-all"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold rounded-xl border border-gray-200 shadow-2xs transition-all"
             >
-              <span>Public Site</span>
-              <span>↗</span>
+              <span>View Site</span>
+              <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+              </svg>
             </Link>
 
-            {/* Lock Session */}
+            {/* Lock session button */}
             <button
               type="button"
               onClick={handleLogout}
@@ -685,7 +676,10 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
         {/* COPY NOTIFICATION TOAST */}
         {copyToast && (
           <div className="fixed top-16 right-6 z-50 bg-[#123C26] text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 animate-bounce">
-            <span>📋 Image URL copied to clipboard!</span>
+            <svg className="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Image URL copied to clipboard!</span>
           </div>
         )}
 
@@ -721,36 +715,36 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Live Online</span>
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
                   </div>
-                  <div className="text-3xl font-black text-gray-900">{stats?.live?.count ?? 0}</div>
+                  <div className="text-3xl font-black text-gray-900">{liveCount}</div>
                   <p className="text-[11px] text-gray-400 font-medium mt-1">Active right now</p>
                 </div>
 
                 {/* Today's Visitors */}
                 <div className="bg-white rounded-3xl p-5 border border-gray-200/90 shadow-xs">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Today's Visitors</span>
-                  <div className="text-3xl font-black text-gray-900 mt-2">{stats?.today?.visitors ?? 0}</div>
-                  <p className="text-[11px] text-gray-400 font-medium mt-1">{stats?.today?.views ?? 0} total pageviews</p>
+                  <div className="text-3xl font-black text-gray-900 mt-2">{todayVisitors}</div>
+                  <p className="text-[11px] text-gray-400 font-medium mt-1">{todayViews} total pageviews</p>
                 </div>
 
                 {/* All-Time Reach */}
                 <div className="bg-white rounded-3xl p-5 border border-gray-200/90 shadow-xs">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">All-Time Reach</span>
-                  <div className="text-3xl font-black text-gray-900 mt-2">{stats?.lifetime?.visitors ?? 0}</div>
-                  <p className="text-[11px] text-gray-400 font-medium mt-1">{stats?.lifetime?.views ?? 0} total views</p>
+                  <div className="text-3xl font-black text-gray-900 mt-2">{lifetimeVisitors}</div>
+                  <p className="text-[11px] text-gray-400 font-medium mt-1">{lifetimeViews} total views</p>
                 </div>
 
                 {/* Subscribers */}
                 <div className="bg-white rounded-3xl p-5 border border-gray-200/90 shadow-xs">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Subscribers</span>
-                  <div className="text-3xl font-black text-gray-900 mt-2">{stats?.hub?.subscribers ?? 0}</div>
+                  <div className="text-3xl font-black text-gray-900 mt-2">{subscribersCount}</div>
                   <p className="text-[11px] text-gray-400 font-medium mt-1">Newsletter community</p>
                 </div>
 
                 {/* Blog Posts */}
                 <div className="bg-white rounded-3xl p-5 border border-gray-200/90 shadow-xs">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Published Posts</span>
-                  <div className="text-3xl font-black text-gray-900 mt-2">{stats?.hub?.blogsPublished ?? 0}</div>
-                  <p className="text-[11px] text-gray-400 font-medium mt-1">{stats?.hub?.blogsDraft ?? 0} in drafts</p>
+                  <div className="text-3xl font-black text-gray-900 mt-2">{publishedBlogs}</div>
+                  <p className="text-[11px] text-gray-400 font-medium mt-1">{draftBlogs} in drafts</p>
                 </div>
               </div>
 
@@ -765,7 +759,11 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                     onClick={() => handleNavigate('posts', 'write')}
                     className="p-4 rounded-2xl bg-gray-50 hover:bg-emerald-50/80 border border-gray-200 hover:border-emerald-300 text-left transition-all cursor-pointer group"
                   >
-                    <span className="text-2xl mb-1 block">✍️</span>
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100/70 text-[#123C26] flex items-center justify-center mb-2.5 group-hover:bg-[#123C26] group-hover:text-white transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                      </svg>
+                    </div>
                     <span className="text-xs font-bold text-gray-900 group-hover:text-[#123C26] block">Write Article</span>
                     <span className="text-[10px] text-gray-400">Open Blog CMS</span>
                   </button>
@@ -775,7 +773,11 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                     onClick={() => handleNavigate('newsletter')}
                     className="p-4 rounded-2xl bg-gray-50 hover:bg-emerald-50/80 border border-gray-200 hover:border-emerald-300 text-left transition-all cursor-pointer group"
                   >
-                    <span className="text-2xl mb-1 block">📢</span>
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100/70 text-[#123C26] flex items-center justify-center mb-2.5 group-hover:bg-[#123C26] group-hover:text-white transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.34 15.84c-.063.046-.128.09-.194.133L6.87 18.257a1.125 1.125 0 01-1.62-1.002V6.745a1.125 1.125 0 011.62-1.002l3.276 2.284c.066.043.131.087.194.133m0 7.68v-7.68m0 7.68A2.25 2.25 0 0012.59 18h2.036c.621 0 1.125-.504 1.125-1.125v-9.75c0-.621-.504-1.125-1.125-1.125H12.59a2.25 2.25 0 00-2.25 2.25m4.5 3.375h1.5a2.25 2.25 0 002.25-2.25v0a2.25 2.25 0 00-2.25-2.25h-1.5" />
+                      </svg>
+                    </div>
                     <span className="text-xs font-bold text-gray-900 group-hover:text-[#123C26] block">Broadcast</span>
                     <span className="text-[10px] text-gray-400">Email subscribers</span>
                   </button>
@@ -785,7 +787,11 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                     onClick={() => handleNavigate('media')}
                     className="p-4 rounded-2xl bg-gray-50 hover:bg-emerald-50/80 border border-gray-200 hover:border-emerald-300 text-left transition-all cursor-pointer group"
                   >
-                    <span className="text-2xl mb-1 block">🖼️</span>
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100/70 text-[#123C26] flex items-center justify-center mb-2.5 group-hover:bg-[#123C26] group-hover:text-white transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                      </svg>
+                    </div>
                     <span className="text-xs font-bold text-gray-900 group-hover:text-[#123C26] block">Media Library</span>
                     <span className="text-[10px] text-gray-400">Manage assets</span>
                   </button>
@@ -795,7 +801,11 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                     onClick={() => handleNavigate('analytics')}
                     className="p-4 rounded-2xl bg-gray-50 hover:bg-emerald-50/80 border border-gray-200 hover:border-emerald-300 text-left transition-all cursor-pointer group"
                   >
-                    <span className="text-2xl mb-1 block">📊</span>
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100/70 text-[#123C26] flex items-center justify-center mb-2.5 group-hover:bg-[#123C26] group-hover:text-white transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                      </svg>
+                    </div>
                     <span className="text-xs font-bold text-gray-900 group-hover:text-[#123C26] block">Traffic Stats</span>
                     <span className="text-[10px] text-gray-400">Full telemetry</span>
                   </button>
@@ -805,7 +815,11 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                     onClick={() => handleNavigate('settings')}
                     className="p-4 rounded-2xl bg-gray-50 hover:bg-emerald-50/80 border border-gray-200 hover:border-emerald-300 text-left transition-all cursor-pointer group"
                   >
-                    <span className="text-2xl mb-1 block">🌐</span>
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100/70 text-[#123C26] flex items-center justify-center mb-2.5 group-hover:bg-[#123C26] group-hover:text-white transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253" />
+                      </svg>
+                    </div>
                     <span className="text-xs font-bold text-gray-900 group-hover:text-[#123C26] block">SEO Engine</span>
                     <span className="text-[10px] text-gray-400">Search Console & 301</span>
                   </button>
@@ -823,9 +837,12 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                     <button
                       type="button"
                       onClick={() => handleNavigate('analytics')}
-                      className="text-xs text-emerald-700 hover:underline font-bold"
+                      className="text-xs text-emerald-700 hover:text-emerald-900 hover:underline font-bold inline-flex items-center gap-1 cursor-pointer"
                     >
-                      View Analytics ➔
+                      <span>View Analytics</span>
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                      </svg>
                     </button>
                   </div>
 
@@ -865,7 +882,7 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                         <p className="font-bold text-gray-900">Dynamic XML Sitemap</p>
                         <p className="text-[11px] text-gray-500">Auto-generated Sitemaps 0.9 Protocol</p>
                       </div>
-                      <a href="http://localhost:5000/sitemap.xml" target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline font-bold text-xs">
+                      <a href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')}/sitemap.xml`} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline font-bold text-xs">
                         /sitemap.xml ↗
                       </a>
                     </div>
@@ -875,7 +892,7 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                         <p className="font-bold text-gray-900">Robots Directives</p>
                         <p className="text-[11px] text-gray-500">Allow: /, Disallow: /admin, Sitemap reference</p>
                       </div>
-                      <a href="http://localhost:5000/robots.txt" target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline font-bold text-xs">
+                      <a href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')}/robots.txt`} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline font-bold text-xs">
                         /robots.txt ↗
                       </a>
                     </div>
@@ -921,7 +938,11 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                     {categories.map((cat, idx) => (
                       <div key={idx} className="bg-white rounded-3xl p-6 border border-gray-200 shadow-xs hover:border-emerald-300 transition-all flex flex-col justify-between">
                         <div>
-                          <span className="text-2xl mb-2 block">🌾</span>
+                          <div className="w-10 h-10 rounded-xl bg-emerald-100/70 text-[#123C26] flex items-center justify-center mb-3">
+                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12.38 2.25c-4.42 0-8 3.58-8 8 0 2.22.9 4.23 2.36 5.67-.14-.54-.23-1.11-.23-1.7 0-3.86 3.14-7 7-7 .59 0 1.16.09 1.7.23C14.77 4.15 13.68 2.25 12.38 2.25zM17.75 8.5c-3.87 0-7 3.13-7 7 0 .59.09 1.16.23 1.7 1.44-1.46 2.34-3.48 2.34-5.7 0-.58-.09-1.15-.24-1.69 1.25.75 2.17 2.05 2.47 3.59.13-.61.2-1.25.2-1.9 0-1.66-1.34-3-3-3z"/>
+                            </svg>
+                          </div>
                           <h3 className="text-base font-bold text-gray-900">{cat.name}</h3>
                           <p className="text-xs text-gray-400 mt-1">Articles published under this category</p>
                         </div>
@@ -932,9 +953,12 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                           <button
                             type="button"
                             onClick={() => handleNavigate('posts', 'all')}
-                            className="text-xs font-bold text-emerald-700 hover:underline cursor-pointer"
+                            className="text-xs font-bold text-emerald-700 hover:text-emerald-900 hover:underline cursor-pointer inline-flex items-center gap-1"
                           >
-                            Filter Posts ➔
+                            <span>Filter Posts</span>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
                           </button>
                         </div>
                       </div>
@@ -980,7 +1004,10 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <span>🖼️</span> Media Asset Library
+                    <svg className="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                    <span>Media Asset Library</span>
                   </h2>
                   <p className="text-xs text-gray-500 mt-1">
                     Uploaded cover photos, article images, and graphics. Total: {mediaFiles.length} files.
@@ -1005,7 +1032,10 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                       <span>Uploading...</span>
                     ) : (
                       <>
-                        <span>+ Upload Media Asset</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        <span>Upload Media Asset</span>
                       </>
                     )}
                   </button>
@@ -1041,17 +1071,23 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                           <button
                             type="button"
                             onClick={() => handleCopyUrl(m.url)}
-                            className="text-[10px] font-bold text-emerald-800 hover:text-emerald-900 cursor-pointer"
+                            className="text-[10px] font-bold text-emerald-800 hover:text-emerald-950 cursor-pointer inline-flex items-center gap-1"
                           >
-                            Copy URL 📋
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+                            </svg>
+                            <span>Copy URL</span>
                           </button>
                           <a
                             href={m.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[10px] text-gray-400 hover:text-gray-700"
+                            className="text-[10px] text-gray-400 hover:text-gray-700 inline-flex items-center gap-0.5"
                           >
-                            Open ↗
+                            <span>Open</span>
+                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                            </svg>
                           </a>
                         </div>
                       </div>
@@ -1074,7 +1110,10 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <span>📄</span> Public Website Pages Directory
+                    <svg className="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                    </svg>
+                    <span>Public Website Pages Directory</span>
                   </h2>
                   <p className="text-xs text-gray-500 mt-1">
                     Manage search indexation, canonical URLs, and preview live public routes.
@@ -1116,7 +1155,9 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                               className="px-3 py-1.5 bg-gray-50 hover:bg-emerald-50 text-[#123C26] rounded-xl border border-gray-200 hover:border-emerald-300 font-bold text-xs transition-all inline-flex items-center gap-1"
                             >
                               <span>View Live</span>
-                              <span>↗</span>
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                              </svg>
                             </Link>
                           </td>
                         </tr>
@@ -1138,13 +1179,16 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                   <button
                     type="button"
                     onClick={() => setActiveSubSection('broadcast')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${
                       activeSubSection !== 'subscribers'
                         ? 'bg-[#123C26] text-white shadow-xs'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    📢 Broadcast Studio
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.34 15.84c-.063.046-.128.09-.194.133L6.87 18.257a1.125 1.125 0 01-1.62-1.002V6.745a1.125 1.125 0 011.62-1.002l3.276 2.284c.066.043.131.087.194.133m0 7.68v-7.68m0 7.68A2.25 2.25 0 0012.59 18h2.036c.621 0 1.125-.504 1.125-1.125v-9.75c0-.621-.504-1.125-1.125-1.125H12.59a2.25 2.25 0 00-2.25 2.25m4.5 3.375h1.5a2.25 2.25 0 002.25-2.25v0a2.25 2.25 0 00-2.25-2.25h-1.5" />
+                    </svg>
+                    <span>Broadcast Studio</span>
                   </button>
                   <button
                     type="button"
@@ -1152,13 +1196,16 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                       setActiveSubSection('subscribers');
                       fetchSubscribers();
                     }}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-2 ${
                       activeSubSection === 'subscribers'
                         ? 'bg-[#123C26] text-white shadow-xs'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    👥 Subscriber Hub ({subscribers.length || stats?.hub?.subscribers || '•'})
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                    </svg>
+                    <span>Subscriber Hub ({subscribers.length || subscribersCount || '•'})</span>
                   </button>
                 </div>
 
@@ -1167,9 +1214,12 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                     type="button"
                     onClick={exportSubscribersCSV}
                     disabled={!subscribers.length}
-                    className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200 transition-all cursor-pointer disabled:opacity-50"
+                    className="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200 transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
                   >
-                    📥 Export CSV
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    <span>Export CSV</span>
                   </button>
                 )}
               </div>
@@ -1208,7 +1258,10 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/90 shadow-xs flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <span>💬</span> Reader Comments & Feedback Moderation
+                    <svg className="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                    </svg>
+                    <span>Reader Comments & Feedback Moderation</span>
                   </h2>
                   <p className="text-xs text-gray-500 mt-1">Review, approve, and moderate comments on blog articles</p>
                 </div>
@@ -1262,7 +1315,7 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                   </div>
                 ) : (
                   <div className="py-16 text-center text-xs text-gray-400">
-                    No reader comments pending moderation. All clear! ✨
+                    No reader comments pending moderation. All clear!
                   </div>
                 )}
               </div>
@@ -1282,33 +1335,33 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                     <span className="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
                   </div>
                   <div className="text-4xl sm:text-5xl font-black text-white my-1">
-                    {stats?.live?.count ?? 0}
+                    {liveCount}
                   </div>
                   <p className="text-[11px] text-emerald-200/80 font-medium">Active in last 60 seconds</p>
                 </div>
 
                 <div className="bg-white rounded-3xl p-5 border border-gray-200/90 shadow-xs">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Today's Visitors</span>
-                  <div className="text-3xl font-black text-gray-900 my-1">{stats?.today?.visitors ?? 0}</div>
-                  <p className="text-[11px] text-gray-400 font-medium">{stats?.today?.views ?? 0} views today</p>
+                  <div className="text-3xl font-black text-gray-900 my-1">{todayVisitors}</div>
+                  <p className="text-[11px] text-gray-400 font-medium">{todayViews} views today</p>
                 </div>
 
                 <div className="bg-white rounded-3xl p-5 border border-gray-200/90 shadow-xs">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">All-Time Reach</span>
-                  <div className="text-3xl font-black text-gray-900 my-1">{stats?.lifetime?.visitors ?? 0}</div>
-                  <p className="text-[11px] text-gray-400 font-medium">{stats?.lifetime?.views ?? 0} total views</p>
+                  <div className="text-3xl font-black text-gray-900 my-1">{lifetimeVisitors}</div>
+                  <p className="text-[11px] text-gray-400 font-medium">{lifetimeViews} total views</p>
                 </div>
 
                 <div className="bg-white rounded-3xl p-5 border border-gray-200/90 shadow-xs">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Subscribers</span>
-                  <div className="text-3xl font-black text-gray-900 my-1">{stats?.hub?.subscribers ?? 0}</div>
+                  <div className="text-3xl font-black text-gray-900 my-1">{subscribersCount}</div>
                   <p className="text-[11px] text-gray-400 font-medium">Community members</p>
                 </div>
 
                 <div className="bg-white rounded-3xl p-5 border border-gray-200/90 shadow-xs">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Published Posts</span>
-                  <div className="text-3xl font-black text-gray-900 my-1">{stats?.hub?.blogsPublished ?? 0}</div>
-                  <p className="text-[11px] text-gray-400 font-medium">{stats?.hub?.blogsDraft ?? 0} drafts</p>
+                  <div className="text-3xl font-black text-gray-900 my-1">{publishedBlogs}</div>
+                  <p className="text-[11px] text-gray-400 font-medium">{draftBlogs} drafts</p>
                 </div>
               </div>
 
@@ -1438,7 +1491,10 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <span>🌐</span> Search Engine Optimization & Webmaster Center
+                    <svg className="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253" />
+                    </svg>
+                    <span>Search Engine Optimization & Webmaster Center</span>
                   </h2>
                   <p className="text-xs text-gray-500 mt-1">
                     Manage Google Search Console, Bing Webmaster code, robots directives, dynamic sitemaps, and 301 URL redirects.
@@ -1448,9 +1504,12 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                   type="button"
                   onClick={handleSaveSeo}
                   disabled={isSavingSeo}
-                  className="px-5 py-2.5 bg-[#123C26] hover:bg-[#0F311F] text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2.5 bg-[#123C26] hover:bg-[#0F311F] text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-2"
                 >
-                  {isSavingSeo ? 'Deploying Changes...' : '💾 Deploy & Save SEO Settings'}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                  </svg>
+                  <span>{isSavingSeo ? 'Deploying Changes...' : 'Deploy & Save SEO Settings'}</span>
                 </button>
               </div>
 
@@ -1468,7 +1527,12 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Webmaster Verification Tokens */}
                 <div className="bg-white rounded-3xl p-6 border border-gray-200/90 shadow-xs space-y-4">
-                  <h3 className="text-base font-bold text-gray-900">🔍 Webmaster Verification Tokens</h3>
+                  <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                    <span>Webmaster Verification Tokens</span>
+                  </h3>
                   
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-800">Google Search Console Token</label>
@@ -1495,7 +1559,13 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
 
                 {/* Dynamic Directives */}
                 <div className="bg-white rounded-3xl p-6 border border-gray-200/90 shadow-xs space-y-4">
-                  <h3 className="text-base font-bold text-gray-900">🤖 Crawling Directives & Sitemaps</h3>
+                  <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Crawling Directives & Sitemaps</span>
+                  </h3>
 
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-800">Robots Indexing</label>
@@ -1515,7 +1585,7 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                       <p className="font-bold text-gray-900">Live Dynamic XML Sitemap</p>
                       <p className="text-[10px] text-gray-500">Auto-includes all public routes and articles</p>
                     </div>
-                    <a href="http://localhost:5000/sitemap.xml" target="_blank" rel="noopener noreferrer" className="text-emerald-700 font-bold hover:underline">
+                    <a href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')}/sitemap.xml`} target="_blank" rel="noopener noreferrer" className="text-emerald-700 font-bold hover:underline">
                       Open /sitemap.xml ↗
                     </a>
                   </div>
@@ -1525,7 +1595,7 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                       <p className="font-bold text-gray-900">Dynamic robots.txt</p>
                       <p className="text-[10px] text-gray-500">Guides search engine crawlers</p>
                     </div>
-                    <a href="http://localhost:5000/robots.txt" target="_blank" rel="noopener noreferrer" className="text-blue-700 font-bold hover:underline">
+                    <a href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')}/robots.txt`} target="_blank" rel="noopener noreferrer" className="text-blue-700 font-bold hover:underline">
                       Open /robots.txt ↗
                     </a>
                   </div>
@@ -1534,18 +1604,22 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                 {/* 301 Redirects Manager */}
                 <div className="bg-white rounded-3xl p-6 border border-gray-200/90 shadow-xs space-y-4 lg:col-span-2">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-base font-bold text-gray-900">🔀 301 Permanent URL Redirects Manager</h3>
+                    <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                      </svg>
+                      <span>301 Permanent URL Redirects Manager</span>
+                    </h3>
                     <span className="text-xs font-bold text-gray-500">{redirects.length} Active Rules</span>
                   </div>
 
-                  <form onSubmit={handleCreateRedirect} className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                  <form onSubmit={handleCreateRedirect} noValidate className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
                     <input
                       type="text"
                       placeholder="Source Path (e.g. /old-article)"
                       value={newRedirect.sourceUrl}
                       onChange={(e) => setNewRedirect({ ...newRedirect, sourceUrl: e.target.value })}
                       className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-mono"
-                      required
                     />
                     <input
                       type="text"
@@ -1553,7 +1627,6 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
                       value={newRedirect.targetUrl}
                       onChange={(e) => setNewRedirect({ ...newRedirect, targetUrl: e.target.value })}
                       className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-mono"
-                      required
                     />
                     <button
                       type="submit"

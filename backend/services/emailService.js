@@ -150,6 +150,88 @@ const sendNewsletterConfirmationEmail = async ({ email, source, sourceLabel }) =
     let bulletPoints = [];
 
     switch (source) {
+      case 'weather':
+      case 'weather_app':
+      case 'weather_demo':
+        subject = '🌦️ KisanMitra Doppler Weather Radar Alerts Activated!';
+        badgeText = 'WEATHER RADAR PRIORITY';
+        heading = 'Precision Micro-Climate & Rain Forecasting';
+        bodyContent = 'Thank you for subscribing to KisanMitra Weather Intelligence! You will receive high-resolution Doppler radar updates, 24-hour rainfall probability notifications, and severe weather audio advisories for your district.';
+        bulletPoints = [
+          'Live 7-day agro-meteorological advisory notifications for your district',
+          'Local language audio voice alerts for frost, storms, and heavy rainfall',
+          'Optimal spray, sowing, and irrigation window timing recommendations'
+        ];
+        break;
+
+      case 'crop_advisory':
+      case 'crop_advisory_app':
+        subject = '🌾 Welcome to KisanMitra Crop Advisory & Diagnostics!';
+        badgeText = 'AGRONOMY ADVISORY CONFIRMED';
+        heading = 'Scientific Crop Management & Disease Diagnostics';
+        bodyContent = 'Thank you for registering for KisanMitra Crop Advisory services. You now have priority access to 26+ crop growth guides, AI pest scanning insights, and seasonal fertilization schedules.';
+        bulletPoints = [
+          'Stage-by-stage crop management guidelines for Kharif, Rabi & Zaid seasons',
+          'AI leaf disease detection alerts with verified organic and chemical remedies',
+          'KVK scientist recommendations tailored to your state, soil type, and climate'
+        ];
+        break;
+
+      case 'market_prices':
+      case 'market_prices_app':
+        subject = '📊 KisanMitra Live Mandi Bhav & APMC Price Alerts!';
+        badgeText = 'MANDI RATES PRIORITY';
+        heading = 'Never Sell Below Fair Market Value';
+        bodyContent = 'Thank you for subscribing to KisanMitra Market Intelligence! We monitor 2,400+ APMC mandis across India to help you sell your harvest at peak market rates.';
+        bulletPoints = [
+          'Daily MSP vs APMC price comparison trends for your specific crops',
+          '7-day mandi rate trend forecasts to help you pick the most profitable selling dates',
+          'Direct connectivity alerts for verified buyers and cold storage logistics'
+        ];
+        break;
+
+      case 'schemes':
+      case 'schemes_app':
+      case 'government_schemes':
+        subject = '🏛️ KisanMitra Government Scheme Alerts Activated!';
+        badgeText = 'GOVERNMENT SCHEME ALERTS';
+        heading = 'Central & State Subsidies, PM-KISAN, and Insurance';
+        bodyContent = 'Thank you for registering for KisanMitra Scheme Alerts. We ensure you never miss subsidy enrollment windows, PM-KISAN installment dates, or crop insurance claims.';
+        bulletPoints = [
+          'Instant notifications on new subsidy openings, drip irrigation & solar pump schemes',
+          'Step-by-step documentation checklists and direct online application links',
+          'PM Fasal Bima Yojana (PMFBY) claim guidelines and local officer contact support'
+        ];
+        break;
+
+      case 'app_launch_waitlist':
+      case 'app':
+      case 'navbar_app':
+      case 'blog_app':
+        subject = "🚀 You're on the KisanMitra Mobile App VIP Waitlist!";
+        badgeText = 'VIP EARLY ACCESS CONFIRMED';
+        heading = 'Smart Farming in Your Pocket — Launching Soon';
+        bodyContent = "Thank you for joining the VIP Early Access waitlist for the KisanMitra Mobile App! You will be the very first to receive direct download links for Google Play, iOS App Store, and Android APK on launch day.";
+        bulletPoints = [
+          'Immediate notification with direct download link the second the app is live',
+          'Early VIP access to offline Doppler weather radar & AI leaf scanner',
+          'Free personalized daily APMC mandi price SMS alerts for your district'
+        ];
+        break;
+
+      case 'video_demo_waitlist':
+      case 'demo':
+        subject = '🎬 You are on the KisanMitra Video Masterclass Waitlist!';
+        badgeText = 'VIDEO MASTERCLASS CONFIRMED';
+        heading = 'See KisanMitra in Action';
+        bodyContent = 'Thank you for registering for the KisanMitra interactive video walkthrough & agronomy masterclass. We are finishing production on a comprehensive, step-by-step smart farming demonstration.';
+        bulletPoints = [
+          'Instant notification the moment the 4K video masterclass is published',
+          'Step-by-step tutorials on AI disease diagnostics & soil management',
+          'Direct access to farmer success stories & live APMC market trends'
+        ];
+        break;
+
       case 'pricing':
         subject = "🌱 You're on the KisanMitra Pricing Priority List!";
         badgeText = 'PRIORITY ACCESS CONFIRMED';

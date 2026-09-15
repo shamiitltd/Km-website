@@ -339,11 +339,17 @@ exports.getAnalyticsStats = async (req, res) => {
     });
 
     const sampleTotal = recentRecords.length || 1;
-    const deviceBreakdown = {
+    const devicePercents = {
       desktop: Math.round((deviceCounts.desktop / sampleTotal) * 100),
       mobile: Math.round((deviceCounts.mobile / sampleTotal) * 100),
       tablet: Math.round((deviceCounts.tablet / sampleTotal) * 100),
       counts: deviceCounts
+    };
+
+    const devices = {
+      desktop: { percentage: devicePercents.desktop, count: deviceCounts.desktop },
+      mobile: { percentage: devicePercents.mobile, count: deviceCounts.mobile },
+      tablet: { percentage: devicePercents.tablet, count: deviceCounts.tablet }
     };
 
     const topBrowsers = Object.entries(browserCounts)
@@ -383,7 +389,7 @@ exports.getAnalyticsStats = async (req, res) => {
       prisma.broadcastLog.findFirst({ orderBy: { sentAt: 'desc' } })
     ]);
 
-    return res.json({
+    const statsPayload = {
       success: true,
       timestamp: now.toISOString(),
       live: {
@@ -391,8 +397,10 @@ exports.getAnalyticsStats = async (req, res) => {
         pages: livePages
       },
       today: {
+        visitors: todayUniqueVisitors,
         uniqueVisitors: todayUniqueVisitors,
         views: todayViews,
+        pageviews: todayViews,
         comparison: {
           yesterdayUnique: yesterdayUniqueVisitors,
           yesterdayViews: yesterdayViews,
@@ -402,20 +410,32 @@ exports.getAnalyticsStats = async (req, res) => {
         }
       },
       allTime: {
+        visitors: totalUniqueVisitors,
         uniqueVisitors: totalUniqueVisitors,
+        views: totalViews,
+        totalViews: totalViews,
+        viewsPerVisitor: totalUniqueVisitors > 0 ? (totalViews / totalUniqueVisitors).toFixed(1) : '1.0'
+      },
+      lifetime: {
+        visitors: totalUniqueVisitors,
+        uniqueVisitors: totalUniqueVisitors,
+        views: totalViews,
         totalViews: totalViews,
         viewsPerVisitor: totalUniqueVisitors > 0 ? (totalViews / totalUniqueVisitors).toFixed(1) : '1.0'
       },
       trend,
       topPages,
-      deviceBreakdown,
+      devices,
+      deviceBreakdown: devicePercents,
       topBrowsers,
       topOS,
       topReferrers,
       recentActivity,
       hub: {
         publishedBlogs: publishedBlogsCount,
+        blogsPublished: publishedBlogsCount,
         draftBlogs: draftBlogsCount,
+        blogsDraft: draftBlogsCount,
         subscribers: subscriberCount,
         latestBroadcast: latestBroadcast ? {
           subject: latestBroadcast.subject,
@@ -423,7 +443,9 @@ exports.getAnalyticsStats = async (req, res) => {
           sentAt: latestBroadcast.sentAt
         } : null
       }
-    });
+    };
+
+    return res.json(statsPayload);
   } catch (error) {
     console.error('Error in getAnalyticsStats:', error);
     return res.status(500).json({ error: 'Failed to compute analytics statistics' });

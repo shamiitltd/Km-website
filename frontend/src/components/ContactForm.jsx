@@ -12,7 +12,9 @@ export default function ContactForm() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', text: '' }
+  const [isShaking, setIsShaking] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [feedback, setFeedback] = useState(null); // { type: 'success' | 'warning' | 'error', text: '' }
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -20,22 +22,60 @@ export default function ContactForm() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => {
+        const updated = { ...prev };
+        delete updated[name];
+        return updated;
+      });
+    }
     if (feedback) setFeedback(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const errors = {};
+    if (!formData.fullName.trim()) {
+      errors.fullName = 'Please enter your full name.';
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = 'Please enter your email address.';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email.trim())) {
+        errors.email = 'Please enter a valid email format (e.g. farmer@kisanmitra.com).';
+      }
+    }
+
+    if (!formData.subject.trim()) {
+      errors.subject = 'Please enter a message subject.';
+    }
+
+    if (!formData.message.trim()) {
+      errors.message = 'Please enter your query or message details.';
+    }
+
     if (!formData.agreedToTerms) {
+      errors.agreedToTerms = 'Please accept the Privacy Policy and Terms & Conditions to proceed.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      const firstErrorMessage = Object.values(errors)[0];
       setFeedback({
-        type: 'error',
-        text: 'Please agree to the Privacy Policy and Terms & Conditions to proceed.'
+        type: 'warning',
+        text: firstErrorMessage
       });
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 450);
       return;
     }
 
     setLoading(true);
     setFeedback(null);
+    setFieldErrors({});
 
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -46,11 +86,11 @@ export default function ContactForm() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          fullName: formData.fullName,
-          email: formData.email,
-          mobile: formData.mobile,
-          subject: formData.subject,
-          message: formData.message
+          fullName: formData.fullName.trim(),
+          email: formData.email.trim(),
+          mobile: formData.mobile.trim(),
+          subject: formData.subject.trim(),
+          message: formData.message.trim()
         })
       });
 
@@ -69,11 +109,14 @@ export default function ContactForm() {
           message: '',
           agreedToTerms: false
         });
+        setFieldErrors({});
       } else {
         setFeedback({
           type: 'error',
           text: data.error || 'Failed to submit your message. Please check your information and try again.'
         });
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 450);
       }
     } catch (err) {
       console.error('Contact Form Error:', err);
@@ -81,6 +124,8 @@ export default function ContactForm() {
         type: 'error',
         text: 'Unable to connect to the server. Please check your connection or contact us directly at support@kisanmitra.com.'
       });
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 450);
     } finally {
       setLoading(false);
     }
@@ -103,6 +148,8 @@ export default function ContactForm() {
               className={`p-5 rounded-2xl mb-6 text-sm sm:text-base flex items-start gap-3.5 transition-all animate-fade-in ${
                 feedback.type === 'success'
                   ? 'bg-[#EAF7ED] text-[#123C26] border border-[#2C8C44]/40 shadow-xs'
+                  : feedback.type === 'warning'
+                  ? 'bg-gradient-to-r from-rose-50 to-amber-50/60 border border-rose-200/90 text-rose-800 shadow-xs'
                   : 'bg-red-50 text-red-900 border border-red-200 shadow-xs'
               }`}
             >
@@ -110,6 +157,12 @@ export default function ContactForm() {
                 <svg className="w-6 h-6 text-[#2C8C44] shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
+              ) : feedback.type === 'warning' ? (
+                <div className="w-6 h-6 rounded-full bg-rose-500/15 flex items-center justify-center shrink-0 mt-0.5">
+                  <svg className="w-4 h-4 text-rose-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
               ) : (
                 <svg className="w-6 h-6 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -119,74 +172,132 @@ export default function ContactForm() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} noValidate className={`space-y-6 ${isShaking ? 'animate-shake' : ''}`}>
             {/* Row 1 */}
             <div className="flex flex-col md:flex-row gap-6">
-              <input
-                type="text"
-                name="fullName"
-                required
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="Full Name"
-                className="w-full p-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:border-[#2C8C44] focus:ring-2 focus:ring-[#2C8C44]/20 transition-all text-gray-800"
-              />
-              <input
-                type="email"
-                name="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email Address"
-                className="w-full p-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:border-[#2C8C44] focus:ring-2 focus:ring-[#2C8C44]/20 transition-all text-gray-800"
-              />
+              <div className="w-full">
+                <input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  placeholder="Full Name *"
+                  className={`w-full p-4 rounded-xl text-base focus:outline-none transition-all ${
+                    fieldErrors.fullName
+                      ? 'bg-rose-50/40 border-2 border-rose-400 text-rose-950 placeholder:text-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/15'
+                      : 'bg-white border border-gray-200 text-gray-800 focus:border-[#2C8C44] focus:ring-2 focus:ring-[#2C8C44]/20'
+                  }`}
+                />
+                {fieldErrors.fullName && (
+                  <p className="text-xs text-rose-600 font-medium mt-1.5 pl-1 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block"></span>
+                    {fieldErrors.fullName}
+                  </p>
+                )}
+              </div>
+
+              <div className="w-full">
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email Address *"
+                  className={`w-full p-4 rounded-xl text-base focus:outline-none transition-all ${
+                    fieldErrors.email
+                      ? 'bg-rose-50/40 border-2 border-rose-400 text-rose-950 placeholder:text-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/15'
+                      : 'bg-white border border-gray-200 text-gray-800 focus:border-[#2C8C44] focus:ring-2 focus:ring-[#2C8C44]/20'
+                  }`}
+                />
+                {fieldErrors.email && (
+                  <p className="text-xs text-rose-600 font-medium mt-1.5 pl-1 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block"></span>
+                    {fieldErrors.email}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Row 2 */}
             <div className="flex flex-col md:flex-row gap-6">
-              <input
-                type="tel"
-                name="mobile"
-                value={formData.mobile}
-                onChange={handleChange}
-                placeholder="Mobile Number (Optional)"
-                className="w-full p-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:border-[#2C8C44] focus:ring-2 focus:ring-[#2C8C44]/20 transition-all text-gray-800"
-              />
-              <input
-                type="text"
-                name="subject"
-                required
-                value={formData.subject}
-                onChange={handleChange}
-                placeholder="Subject"
-                className="w-full p-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:border-[#2C8C44] focus:ring-2 focus:ring-[#2C8C44]/20 transition-all text-gray-800"
-              />
+              <div className="w-full">
+                <input
+                  type="tel"
+                  name="mobile"
+                  value={formData.mobile}
+                  onChange={handleChange}
+                  placeholder="Mobile Number (Optional)"
+                  className="w-full p-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:border-[#2C8C44] focus:ring-2 focus:ring-[#2C8C44]/20 transition-all text-gray-800"
+                />
+              </div>
+
+              <div className="w-full">
+                <input
+                  type="text"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  placeholder="Subject *"
+                  className={`w-full p-4 rounded-xl text-base focus:outline-none transition-all ${
+                    fieldErrors.subject
+                      ? 'bg-rose-50/40 border-2 border-rose-400 text-rose-950 placeholder:text-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/15'
+                      : 'bg-white border border-gray-200 text-gray-800 focus:border-[#2C8C44] focus:ring-2 focus:ring-[#2C8C44]/20'
+                  }`}
+                />
+                {fieldErrors.subject && (
+                  <p className="text-xs text-rose-600 font-medium mt-1.5 pl-1 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block"></span>
+                    {fieldErrors.subject}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Message Area */}
-            <textarea
-              name="message"
-              required
-              rows="5"
-              value={formData.message}
-              onChange={handleChange}
-              placeholder="Your Message (describe your farm query, crop issue, or feedback)..."
-              className="w-full p-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:border-[#2C8C44] focus:ring-2 focus:ring-[#2C8C44]/20 transition-all resize-none text-gray-800"
-            ></textarea>
+            <div>
+              <textarea
+                name="message"
+                rows="5"
+                value={formData.message}
+                onChange={handleChange}
+                placeholder="Your Message (describe your farm query, crop issue, or feedback)... *"
+                className={`w-full p-4 rounded-xl text-base focus:outline-none transition-all resize-none ${
+                  fieldErrors.message
+                    ? 'bg-rose-50/40 border-2 border-rose-400 text-rose-950 placeholder:text-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/15'
+                    : 'bg-white border border-gray-200 text-gray-800 focus:border-[#2C8C44] focus:ring-2 focus:ring-[#2C8C44]/20'
+                }`}
+              ></textarea>
+              {fieldErrors.message && (
+                <p className="text-xs text-rose-600 font-medium mt-1 pl-1 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block"></span>
+                  {fieldErrors.message}
+                </p>
+              )}
+            </div>
 
             {/* Checkbox */}
-            <div className="flex items-center gap-3 py-1">
-              <input
-                type="checkbox"
-                id="terms"
-                name="agreedToTerms"
-                checked={formData.agreedToTerms}
-                onChange={handleChange}
-                className="w-5 h-5 accent-[#123C26] cursor-pointer rounded shrink-0"
-              />
-              <label htmlFor="terms" className="text-gray-700 text-sm sm:text-base font-medium cursor-pointer">
-                I agree to the <Link to="/terms" className="text-[#2C8C44] font-semibold hover:underline">Privacy Policy</Link> and <Link to="/terms" className="text-[#2C8C44] font-semibold hover:underline">Terms & Conditions</Link>
-              </label>
+            <div className="py-1">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  name="agreedToTerms"
+                  checked={formData.agreedToTerms}
+                  onChange={handleChange}
+                  className={`w-5 h-5 cursor-pointer rounded shrink-0 ${
+                    fieldErrors.agreedToTerms ? 'accent-rose-600 ring-2 ring-rose-400' : 'accent-[#123C26]'
+                  }`}
+                />
+                <label htmlFor="terms" className="text-gray-700 text-sm sm:text-base font-medium cursor-pointer">
+                  I agree to the <Link to="/terms" className="text-[#2C8C44] font-semibold hover:underline">Privacy Policy</Link> and <Link to="/terms" className="text-[#2C8C44] font-semibold hover:underline">Terms & Conditions</Link> *
+                </label>
+              </div>
+              {fieldErrors.agreedToTerms && (
+                <p className="text-xs text-rose-600 font-medium mt-1.5 pl-1 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block"></span>
+                  {fieldErrors.agreedToTerms}
+                </p>
+              )}
             </div>
 
             {/* Submit Button */}

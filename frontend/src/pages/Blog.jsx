@@ -5,7 +5,7 @@ import Newsletter from '../components/Newsletter';
 
 export default function Blog() {
     return (
-        <main className="w-full">
+        <main className="w-full overflow-x-hidden">
             <BlogHero />
             <BlogList />
             <Newsletter />

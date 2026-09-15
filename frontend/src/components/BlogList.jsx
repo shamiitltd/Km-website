@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { resolveImageUrl } from '../utils/imageUrlHelper';
+import { showComingSoon } from './ComingSoonModal';
 
 export default function BlogList() {
   const [blogs, setBlogs] = useState([]);
@@ -70,13 +71,13 @@ export default function BlogList() {
   };
 
   return (
-    <section className="w-full py-12 px-6 md:px-12 lg:px-16 xl:px-24 bg-[#FAFCFA] flex justify-center">
+    <section className="w-full py-12 px-6 md:px-12 lg:px-16 xl:px-24 bg-[#FAFCFA] flex justify-center overflow-x-hidden">
       <div className="max-w-[95rem] w-full">
         
         {/* Top Header / Categories & Search */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 mb-12">
-          {/* Categories Scrollable */}
-          <div className="flex items-center gap-3 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 scrollbar-hide">
+          {/* Categories Scrollable (Scrollbar fully hidden) */}
+          <div className="flex items-center gap-3 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 no-scrollbar scrollbar-hide">
             {categories.map((cat) => (
               <button 
                 key={cat}
@@ -217,30 +218,101 @@ export default function BlogList() {
             </div>
 
             {/* Promo Banner */}
-            <div className="bg-[#F2F9F3] rounded-2xl p-8 border border-[#EBF5EE] relative overflow-hidden h-[300px]">
-              <div className="relative z-10 max-w-[65%] mt-2">
-                <h3 className="text-[#123C26] text-[22px] font-bold mb-3 leading-tight">Try Kisan Mitra App</h3>
-                <p className="text-gray-700 text-[15px] leading-relaxed mb-6">Get AI-powered recommendations, real-time alerts and much more.</p>
-                <button className="bg-[#2C8C44] hover:bg-[#1f6631] text-white font-bold text-[15px] py-3.5 px-6 rounded-xl transition-colors shadow-md w-full sm:w-auto">
+            <div className="bg-[#F2F9F3] rounded-2xl p-6 sm:p-7 border border-[#EBF5EE] relative overflow-hidden min-h-[350px] flex flex-col justify-between">
+              <div className="relative z-10 w-full max-w-[50%] sm:max-w-[52%]">
+                <h3 className="text-[#123C26] text-[20px] font-bold mb-2.5 leading-tight">Try Kisan Mitra App</h3>
+                <p className="text-gray-700 text-[13.5px] leading-relaxed mb-5">
+                  Get AI-powered recommendations, real-time alerts and much more.
+                </p>
+                <button 
+                  onClick={() => showComingSoon('app', 'KisanMitra Mobile App', 'Get AI-powered agronomy recommendations, real-time alerts and much more.', 'blog_app')}
+                  className="bg-[#2C8C44] hover:bg-[#1f6631] text-white font-bold text-[13.5px] py-2.5 px-5 rounded-xl transition-colors shadow-md w-max mb-3 cursor-pointer"
+                >
                   Download Now
                 </button>
-                <div className="flex gap-2 mt-5">
-                   <div className="bg-black text-white text-[11px] font-medium flex items-center gap-1.5 px-2.5 py-1.5 rounded cursor-pointer"><svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M3.6 20.4l13.8-9L3.6 2.4v18zm14.4-9.6L22.2 12l-4.2 1.2-4.2-2.4 4.2-2.4zm-4.8 3L8.4 17.4l4.8-3.6zM8.4 6.6l4.8-3.6-4.8 3.6z"/></svg> Google Play</div>
-                   <div className="bg-black text-white text-[11px] font-medium flex items-center gap-1.5 px-2.5 py-1.5 rounded cursor-pointer"><svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.1 14.1c-.8.4-1.7.5-2.6.5-3 0-5.5-2.4-5.5-5.5s2.4-5.5 5.5-5.5c.8 0 1.6.2 2.3.5-.2.6-.3 1.2-.3 1.8 0 2.2 1.3 4 3.1 5.1-.3 1.3-1.1 2.3-2.5 3.1z"/></svg> App Store</div>
+                <div className="flex flex-col gap-1.5">
+                   <div 
+                     onClick={() => showComingSoon('app', 'KisanMitra on Google Play', 'Get direct Android APK and Google Play early access.', 'blog_app')}
+                     className="bg-black text-white text-[10px] font-medium flex items-center gap-1.5 px-2.5 py-1.5 rounded cursor-pointer w-max hover:bg-gray-800 transition-colors"
+                   >
+                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M3.6 20.4l13.8-9L3.6 2.4v18zm14.4-9.6L22.2 12l-4.2 1.2-4.2-2.4 4.2-2.4zm-4.8 3L8.4 17.4l4.8-3.6zM8.4 6.6l4.8-3.6-4.8 3.6z"/></svg> 
+                     Google Play
+                   </div>
+                   <div 
+                     onClick={() => showComingSoon('app', 'KisanMitra on App Store', 'Get direct Apple iOS App Store testflight & release early access.', 'blog_app')}
+                     className="bg-black text-white text-[10px] font-medium flex items-center gap-1.5 px-2.5 py-1.5 rounded cursor-pointer w-max hover:bg-gray-800 transition-colors"
+                   >
+                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.1 14.1c-.8.4-1.7.5-2.6.5-3 0-5.5-2.4-5.5-5.5s2.4-5.5 5.5-5.5c.8 0 1.6.2 2.3.5-.2.6-.3 1.2-.3 1.8 0 2.2 1.3 4 3.1 5.1-.3 1.3-1.1 2.3-2.5 3.1z"/></svg> 
+                     App Store
+                   </div>
                 </div>
               </div>
               
-              {/* Phone Mockup Illustration */}
-              <div className="hidden lg:flex absolute -right-10 -bottom-16 w-56 h-[300px] bg-white rounded-[2rem] shadow-2xl border-[6px] border-gray-800 flex-col overflow-hidden rotate-[-5deg]">
-                 <div className="bg-[#F2F9F3] h-12 w-full flex items-center justify-between px-4 shrink-0 border-b border-gray-100">
-                    <span className="text-[10px] font-bold text-[#123C26]">Kisan Mitra</span>
-                    <div className="w-12 h-3.5 bg-black rounded-full"></div>
+              {/* Phone Mockup Illustration with realistic App UI */}
+              <div className="hidden lg:flex absolute -right-3 -bottom-8 w-52 xl:w-56 h-[330px] bg-slate-950 rounded-[2.5rem] shadow-2xl border-[6px] border-slate-900 flex-col overflow-hidden rotate-[-4deg] select-none pointer-events-none">
+                 {/* Top Dynamic Island & Status Bar */}
+                 <div className="bg-[#123C26] text-white h-11 w-full flex items-center justify-between px-3.5 shrink-0 border-b border-emerald-800/40 text-[9px]">
+                    <div className="flex items-center gap-1.5 font-bold tracking-tight text-emerald-100">
+                      <img src="/favicon.png" alt="KM" className="w-3.5 h-3.5 rounded-full bg-white p-0.5 object-contain" />
+                      <span>KisanMitra</span>
+                    </div>
+                    <div className="w-11 h-3 bg-black rounded-full shadow-inner"></div>
+                    <div className="flex items-center gap-1 text-[8px] text-emerald-200">
+                      <span>28°C</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    </div>
                  </div>
-                 <div className="p-4 space-y-3 flex-grow bg-white">
-                    <div className="w-full h-16 bg-gray-100 rounded-xl"></div>
-                    <div className="w-full h-10 bg-[#F2F9F3] rounded-xl"></div>
-                    <div className="w-3/4 h-3.5 bg-gray-200 rounded-full mt-4"></div>
-                    <div className="w-1/2 h-3.5 bg-gray-200 rounded-full"></div>
+
+                 {/* In-App Live Content Screen */}
+                 <div className="p-3 space-y-2.5 flex-grow bg-gradient-to-b from-emerald-50/50 via-white to-slate-50 text-slate-800 overflow-hidden font-sans">
+                    {/* Live Crop Advisory Card */}
+                    <div className="bg-gradient-to-r from-[#123C26] to-[#2C8C44] text-white p-2.5 rounded-xl shadow-md">
+                      <div className="flex justify-between items-center text-[8px] opacity-85 mb-0.5">
+                        <span className="font-semibold uppercase tracking-wider">🌾 Crop Advisory</span>
+                        <span className="bg-emerald-400/25 px-1.5 py-0.5 rounded text-[7px] font-bold">Rabi Season</span>
+                      </div>
+                      <div className="font-extrabold text-[11px] leading-tight">Wheat (HD-2967)</div>
+                      <div className="text-[8px] text-emerald-100 mt-1 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-300"></span>
+                        Optimal Irrigation Window Active
+                      </div>
+                    </div>
+
+                    {/* AI Disease Scanner Quick Action */}
+                    <div className="bg-white p-2 rounded-xl border border-emerald-100 shadow-sm flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px]">📷</div>
+                        <div>
+                          <div className="text-[9px] font-bold text-slate-800">AI Leaf Diagnostics</div>
+                          <div className="text-[7.5px] text-slate-500">Scan & detect 40+ pests</div>
+                        </div>
+                      </div>
+                      <span className="bg-emerald-600 text-white text-[8px] font-bold px-2 py-1 rounded-md shadow-sm">Scan</span>
+                    </div>
+
+                    {/* Live Mandi Rate Ticker */}
+                    <div className="bg-amber-50/80 p-2 rounded-xl border border-amber-100 shadow-sm">
+                      <div className="flex justify-between items-center text-[7.5px] text-amber-800 font-bold mb-1">
+                        <span>📊 Live Mandi Bhav</span>
+                        <span className="text-emerald-700 font-extrabold">APMC Live</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[8.5px]">
+                        <span className="font-medium text-slate-700">Gehu (Wheat)</span>
+                        <span className="font-extrabold text-emerald-800">₹2,450 <span className="text-[7px] text-emerald-600">▲ +₹45</span></span>
+                      </div>
+                      <div className="flex justify-between items-center text-[8.5px] mt-0.5">
+                        <span className="font-medium text-slate-700">Sarson (Mustard)</span>
+                        <span className="font-extrabold text-emerald-800">₹5,680 <span className="text-[7px] text-emerald-600">▲ +₹120</span></span>
+                      </div>
+                    </div>
+
+                    {/* Mini Tab Bar */}
+                    <div className="pt-1 flex justify-around text-[7.5px] text-slate-400 font-bold border-t border-slate-100">
+                      <span className="text-emerald-700 font-extrabold">● Home</span>
+                      <span>🌾 Crops</span>
+                      <span>🌦️ Weather</span>
+                      <span>📈 Mandi</span>
+                    </div>
                  </div>
               </div>
             </div>

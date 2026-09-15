@@ -1,5 +1,6 @@
 import React from 'react';
 import cta_plant from '../assets/cta_plant.png';
+import { showComingSoon } from './ComingSoonModal';
 
 export default function PricingCTA() {
   return (
@@ -26,14 +27,20 @@ export default function PricingCTA() {
 
         {/* Right Side: Action Buttons */}
         <div className="mt-10 md:mt-0 flex flex-col sm:flex-row items-center gap-4 shrink-0 z-10">
-          <button className="w-full sm:w-auto bg-[#59B23E] hover:bg-[#4d9c35] text-white font-bold text-[17px] py-3.5 px-7 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm">
+          <button 
+            onClick={() => showComingSoon('app')}
+            className="w-full sm:w-auto bg-[#59B23E] hover:bg-[#4d9c35] text-white font-bold text-[17px] py-3.5 px-7 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+          >
             Download App
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
             </svg>
           </button>
           
-          <button className="w-full sm:w-auto bg-transparent hover:bg-white/5 border border-gray-400 text-gray-100 font-semibold text-[17px] py-3.5 px-7 rounded-xl transition-colors flex items-center justify-center gap-2">
+          <button 
+            onClick={() => showComingSoon('demo')}
+            className="w-full sm:w-auto bg-transparent hover:bg-white/5 border border-gray-400 text-gray-100 font-semibold text-[17px] py-3.5 px-7 rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
+          >
             Watch Demo
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />

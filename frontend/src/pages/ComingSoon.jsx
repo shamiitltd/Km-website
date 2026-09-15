@@ -5,7 +5,8 @@ export default function ComingSoon({ type: propType }) {
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', message: '' }
+  const [isShaking, setIsShaking] = useState(false);
+  const [feedback, setFeedback] = useState(null); // { type: 'success' | 'warning' | 'error', message: '', alreadySubscribed?: boolean }
 
   // Determine page content based on prop or route path
   const currentPath = location.pathname.toLowerCase();
@@ -137,7 +138,29 @@ export default function ComingSoon({ type: propType }) {
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    
+    // Custom Senior Designer validation
+    if (!email.trim()) {
+      setFeedback({
+        type: 'warning',
+        message: 'Please enter your email address to receive priority updates.'
+      });
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 450);
+      return;
+    }
+
+    const trimmedEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setFeedback({
+        type: 'warning',
+        message: 'Please enter a valid email format (e.g. farmer@kisanmitra.com).'
+      });
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 450);
+      return;
+    }
 
     setLoading(true);
     setFeedback(null);
@@ -151,7 +174,7 @@ export default function ComingSoon({ type: propType }) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: email.trim(),
+          email: trimmedEmail,
           source: content.source,
           sourceLabel: content.sourceLabel
         })
@@ -171,6 +194,8 @@ export default function ComingSoon({ type: propType }) {
           type: 'error',
           message: data.error || 'Failed to register your email. Please try again.'
         });
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 450);
       }
     } catch (err) {
       console.error('Subscription error in ComingSoon:', err);
@@ -178,6 +203,8 @@ export default function ComingSoon({ type: propType }) {
         type: 'error',
         message: 'Unable to connect to the server. Please check your connection and try again.'
       });
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 450);
     } finally {
       setLoading(false);
     }
@@ -239,28 +266,26 @@ export default function ComingSoon({ type: propType }) {
         <div className="w-full max-w-xl mb-12">
           {feedback?.type === 'success' ? (
             feedback.alreadySubscribed ? (
-              <div className="bg-red-50 border border-red-200 text-red-900 px-7 py-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs animate-fade-in text-left">
+              <div className="bg-gradient-to-br from-amber-50 via-rose-50/50 to-amber-50/70 border border-amber-200/90 text-amber-950 p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm animate-fade-in text-left">
                 <div className="flex items-center gap-3.5">
-                  <svg className="w-7 h-7 text-red-600 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg className="w-7 h-7 text-amber-700 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                   <div>
-                    <p className="text-base font-bold text-red-900">{feedback.message}</p>
-                    <p className="text-xs text-red-700 mt-0.5 font-medium">
-                      This email is already covered across all KisanMitra announcements & newsletters.
-                    </p>
+                    <p className="text-base font-bold text-amber-950">{feedback.message}</p>
+                    <p className="text-xs text-amber-900/80 mt-0.5 font-medium">This email is already covered across all KisanMitra announcements & waitlists.</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setFeedback(null)}
-                  className="text-xs font-bold text-red-700 hover:text-red-950 underline whitespace-nowrap cursor-pointer shrink-0"
+                  className="text-xs font-bold text-amber-800 hover:text-amber-950 underline whitespace-nowrap cursor-pointer shrink-0"
                 >
                   Check another email
                 </button>
               </div>
             ) : (
-              <div className="bg-[#EAF7ED] border-2 border-[#2C8C44]/40 text-[#123C26] px-8 py-5 rounded-2xl flex flex-col sm:flex-row items-center justify-center gap-3.5 shadow-sm animate-fade-in">
+              <div className="bg-gradient-to-br from-emerald-50 via-emerald-50/90 to-teal-50 border border-emerald-200/90 text-[#123C26] px-8 py-5 rounded-2xl flex flex-col sm:flex-row items-center justify-center gap-3.5 shadow-sm animate-fade-in">
                 <svg className="w-7 h-7 text-[#2C8C44] flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -274,11 +299,15 @@ export default function ComingSoon({ type: propType }) {
             <div className="w-full">
               <form
                 onSubmit={handleSubscribe}
-                className="bg-white/95 backdrop-blur-sm p-2 sm:p-2.5 rounded-2xl flex flex-col sm:flex-row items-center gap-2 border border-gray-200 shadow-md focus-within:ring-2 focus-within:ring-[#2C8C44]/40 focus-within:border-[#2C8C44] transition-all"
+                noValidate
+                className={`bg-white/95 backdrop-blur-sm p-2 sm:p-2.5 rounded-2xl flex flex-col sm:flex-row items-center gap-2 border shadow-md transition-all ${
+                  feedback?.type === 'warning'
+                    ? 'border-2 border-rose-400 focus-within:ring-4 focus-within:ring-rose-500/15'
+                    : 'border-gray-200 focus-within:ring-2 focus-within:ring-[#2C8C44]/40 focus-within:border-[#2C8C44]'
+                } ${isShaking ? 'animate-shake' : ''}`}
               >
                 <input
                   type="email"
-                  required
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -307,6 +336,18 @@ export default function ComingSoon({ type: propType }) {
                   )}
                 </button>
               </form>
+
+              {/* Senior Designer Warning Badge */}
+              {feedback?.type === 'warning' && (
+                <div className="flex items-center gap-2.5 px-4 py-2.5 mt-3 rounded-xl bg-gradient-to-r from-rose-50 to-amber-50/60 border border-rose-200/90 text-rose-800 text-xs sm:text-sm font-medium shadow-sm transition-all duration-200 text-left">
+                  <div className="w-5 h-5 rounded-full bg-rose-500/15 flex items-center justify-center shrink-0">
+                    <svg className="w-3.5 h-3.5 text-rose-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span className="leading-snug">{feedback.message}</span>
+                </div>
+              )}
 
               {feedback?.type === 'error' && (
                 <p className="text-red-600 text-sm font-medium mt-3 text-center sm:text-left pl-2">

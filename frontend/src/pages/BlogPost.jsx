@@ -69,7 +69,7 @@ export default function BlogPost() {
   const cleanHTML = DOMPurify.sanitize(post.content);
 
   return (
-    <article className="w-full bg-white min-h-screen">
+    <article className="w-full bg-white min-h-screen overflow-x-hidden">
       <SeoManager customMeta={{ isBlogDetail: true, ...post }} />
       {/* Hero Section */}
       <div 

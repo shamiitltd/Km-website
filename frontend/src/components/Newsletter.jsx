@@ -3,11 +3,34 @@ import React, { useState } from 'react';
 export default function Newsletter() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', message: '' }
+  const [isShaking, setIsShaking] = useState(false);
+  const [feedback, setFeedback] = useState(null); // { type: 'success' | 'warning' | 'error', message: '', alreadySubscribed?: boolean }
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    
+    // Custom Senior Designer validation
+    if (!email.trim()) {
+      setFeedback({
+        type: 'warning',
+        message: 'Please enter your email address to subscribe.'
+      });
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 450);
+      return;
+    }
+
+    const trimmedEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setFeedback({
+        type: 'warning',
+        message: 'Please enter a valid email format (e.g. farmer@kisanmitra.com).'
+      });
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 450);
+      return;
+    }
 
     setLoading(true);
     setFeedback(null);
@@ -21,7 +44,7 @@ export default function Newsletter() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: email.trim(),
+          email: trimmedEmail,
           source: 'blog',
           sourceLabel: 'Farming Insights & Agronomy Newsletter'
         })
@@ -41,6 +64,8 @@ export default function Newsletter() {
           type: 'error',
           message: data.error || 'Failed to register your subscription. Please try again.'
         });
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 450);
       }
     } catch (err) {
       console.error('Newsletter error:', err);
@@ -48,6 +73,8 @@ export default function Newsletter() {
         type: 'error',
         message: 'Unable to connect to the server. Please check your connection and try again.'
       });
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 450);
     } finally {
       setLoading(false);
     }
@@ -100,14 +127,14 @@ export default function Newsletter() {
           <div className="w-full lg:w-[42%] flex flex-col sm:items-end">
             {feedback?.type === 'success' ? (
               feedback.alreadySubscribed ? (
-                <div className="w-full sm:max-w-md xl:max-w-lg bg-red-50 border border-red-200 text-red-900 p-5 rounded-2xl flex items-start justify-between gap-3 shadow-xs animate-fade-in text-left">
+                <div className="w-full sm:max-w-md xl:max-w-lg bg-gradient-to-br from-amber-50 via-rose-50/50 to-amber-50/70 border border-amber-200/90 text-amber-950 p-5 rounded-2xl flex items-start justify-between gap-3 shadow-xs animate-fade-in text-left">
                   <div className="flex items-start gap-3">
-                    <svg className="w-6 h-6 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 text-amber-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                     <div>
-                      <p className="text-sm font-bold text-red-900">{feedback.message}</p>
-                      <p className="text-xs text-red-700 mt-1">
+                      <p className="text-sm font-bold text-amber-950">{feedback.message}</p>
+                      <p className="text-xs text-amber-900/80 mt-1">
                         This email is already registered across all KisanMitra updates.
                       </p>
                     </div>
@@ -115,37 +142,40 @@ export default function Newsletter() {
                   <button
                     type="button"
                     onClick={() => setFeedback(null)}
-                    className="text-xs font-bold text-red-700 hover:text-red-950 underline whitespace-nowrap cursor-pointer shrink-0 mt-0.5"
+                    className="text-xs font-bold text-amber-800 hover:text-amber-950 underline whitespace-nowrap cursor-pointer shrink-0 mt-0.5"
                   >
                     Reset
                   </button>
                 </div>
               ) : (
-                <div className="w-full sm:max-w-md xl:max-w-lg bg-white border border-[#2C8C44]/40 text-[#123C26] p-5 rounded-2xl flex items-start gap-3 shadow-xs animate-fade-in text-left">
+                <div className="w-full sm:max-w-md xl:max-w-lg bg-gradient-to-br from-emerald-50 via-emerald-50/90 to-teal-50 border border-emerald-200/90 text-[#123C26] p-5 rounded-2xl flex items-start gap-3 shadow-xs animate-fade-in text-left">
                   <svg className="w-6 h-6 text-[#2C8C44] shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div>
                     <p className="text-sm font-bold">{feedback.message}</p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-emerald-800/80 mt-1">
                       Please check your inbox or spam folder for your confirmation.
                     </p>
                   </div>
                 </div>
               )
             ) : (
-              <form onSubmit={handleSubscribe} className="w-full sm:max-w-md xl:max-w-lg flex flex-col">
-                <div className="flex flex-col sm:flex-row gap-3 w-full">
+              <form onSubmit={handleSubscribe} noValidate className="w-full sm:max-w-md xl:max-w-lg flex flex-col">
+                <div className={`flex flex-col sm:flex-row gap-3 w-full ${isShaking ? 'animate-shake' : ''}`}>
                   <input 
                     type="email" 
-                    required
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
                       if (feedback) setFeedback(null);
                     }}
                     placeholder="Enter your email" 
-                    className="w-full bg-white border border-gray-200 text-gray-700 px-5 py-3.5 rounded-xl focus:outline-none focus:border-[#2C8C44] focus:ring-2 focus:ring-[#2C8C44]/20 shadow-xs"
+                    className={`w-full px-5 py-3.5 rounded-xl transition-all shadow-xs outline-none ${
+                      feedback?.type === 'warning'
+                        ? 'bg-rose-50/40 border-2 border-rose-400 text-rose-950 placeholder:text-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/15'
+                        : 'bg-white border border-gray-200 text-gray-700 placeholder-gray-400 focus:border-[#2C8C44] focus:ring-2 focus:ring-[#2C8C44]/20'
+                    }`}
                   />
                   <button 
                     type="submit" 
@@ -168,8 +198,20 @@ export default function Newsletter() {
                   </button>
                 </div>
 
+                {/* Senior Designer Custom Warning Badge */}
+                {feedback?.type === 'warning' && (
+                  <div className="flex items-center gap-2.5 px-3.5 py-2.5 mt-2.5 rounded-xl bg-gradient-to-r from-rose-50 to-amber-50/60 border border-rose-200/90 text-rose-800 text-xs font-medium shadow-sm transition-all duration-200 text-left">
+                    <div className="w-5 h-5 rounded-full bg-rose-500/15 flex items-center justify-center shrink-0">
+                      <svg className="w-3.5 h-3.5 text-rose-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <span className="leading-snug">{feedback.message}</span>
+                  </div>
+                )}
+
                 {feedback?.type === 'error' && (
-                  <p className="text-red-600 text-xs font-medium mt-2 pl-1">
+                  <p className="text-red-600 text-xs font-medium mt-2 pl-1 text-left">
                     {feedback.message}
                   </p>
                 )}

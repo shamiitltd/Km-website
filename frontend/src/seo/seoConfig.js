@@ -139,6 +139,69 @@ export const STATIC_PAGE_METADATA = {
       { name: 'Blog', path: '/blog' }
     ]
   },
+  '/weather': {
+    title: 'Accurate Agricultural Weather Forecast & Crop Insights | KisanMitra',
+    description: 'Real-time weather updates, 7-day hyper-local forecasts, severe weather alerts, and AI-powered agricultural spraying and irrigation recommendations.',
+    keywords: 'agricultural weather, farming weather forecast, mandi weather, rain alert farmers, spraying window, irrigation planner India',
+    canonicalPath: '/weather',
+    ogType: 'website',
+    breadcrumbs: [
+      { name: 'Home', path: '/' },
+      { name: 'Weather Updates', path: '/weather' }
+    ]
+  },
+  '/weather-updates': {
+    title: 'Accurate Agricultural Weather Forecast & Crop Insights | KisanMitra',
+    description: 'Real-time weather updates, 7-day hyper-local forecasts, severe weather alerts, and AI-powered agricultural spraying and irrigation recommendations.',
+    canonicalPath: '/weather',
+    ogType: 'website'
+  },
+  '/crop-advisory': {
+    title: 'ICAR Crop Cultivation Advisory & Pest Diagnosis | KisanMitra',
+    description: 'All-India ICAR-standard crop cultivation guide, regional variety recommendations, authentic pest & disease management, and fertilizer dosage calculator for 26+ crops.',
+    keywords: 'crop advisory, ICAR package of practices, pest control guide, crop disease identification, fertilizer calculator, Indian farming guide, wheat advisory, rice cultivation',
+    canonicalPath: '/crop-advisory',
+    ogType: 'website',
+    breadcrumbs: [
+      { name: 'Home', path: '/' },
+      { name: 'Crop Advisory', path: '/crop-advisory' }
+    ]
+  },
+  '/advisory': {
+    title: 'ICAR Crop Cultivation Advisory & Pest Diagnosis | KisanMitra',
+    description: 'All-India ICAR-standard crop cultivation guide, regional variety recommendations, authentic pest & disease management, and fertilizer dosage calculator for 26+ crops.',
+    canonicalPath: '/crop-advisory',
+    ogType: 'website'
+  },
+  '/market-prices': {
+    title: 'Live APMC Mandi Bhav & Agricultural Commodity Rates | KisanMitra',
+    description: 'Real-time APMC Mandi prices, daily modal rates, MSP benchmarks, and arrival telemetry across 165+ agricultural wholesale markets in India.',
+    keywords: 'mandi bhav, APMC market rates, live crop prices, agmarknet data, commodity price today, wheat mandi rate, onion price',
+    canonicalPath: '/market-prices',
+    ogType: 'website',
+    breadcrumbs: [
+      { name: 'Home', path: '/' },
+      { name: 'Market Prices', path: '/market-prices' }
+    ]
+  },
+  '/mandi-prices': {
+    title: 'Live APMC Mandi Bhav & Agricultural Commodity Rates | KisanMitra',
+    description: 'Real-time APMC Mandi prices, daily modal rates, MSP benchmarks, and arrival telemetry across 165+ agricultural wholesale markets in India.',
+    canonicalPath: '/market-prices',
+    ogType: 'website'
+  },
+  '/marketplace': {
+    title: 'Live APMC Mandi Bhav & Agricultural Commodity Rates | KisanMitra',
+    description: 'Real-time APMC Mandi prices, daily modal rates, MSP benchmarks, and arrival telemetry across 165+ agricultural wholesale markets in India.',
+    canonicalPath: '/market-prices',
+    ogType: 'website'
+  },
+  '/market': {
+    title: 'Live APMC Mandi Bhav & Agricultural Commodity Rates | KisanMitra',
+    description: 'Real-time APMC Mandi prices, daily modal rates, MSP benchmarks, and arrival telemetry across 165+ agricultural wholesale markets in India.',
+    canonicalPath: '/market-prices',
+    ogType: 'website'
+  },
   '/contact': {
     title: 'Contact KisanMitra Support & Advisory Team | KisanMitra',
     description: 'Get in touch with the KisanMitra team for technical assistance, partnership inquiries, or agricultural consultations.',
@@ -185,6 +248,35 @@ export const STATIC_PAGE_METADATA = {
     title: 'Refund Policy & Fair Pricing Guarantee | KisanMitra',
     description: 'Read KisanMitra\'s customer-first refund policy and subscription cancellation guidelines.',
     canonicalPath: '/refund-policy',
+    ogType: 'website'
+  },
+  '/government-schemes': {
+    title: 'Government Agriculture Schemes & Subsidies | KisanMitra',
+    description: 'Explore 16+ verified Indian Central & State Government agriculture schemes, PM-KISAN ₹6,000 DBT, PM-KUSUM solar pump subsidy, PMFBY crop insurance, and Kisan Credit Card (KCC).',
+    keywords: 'government agriculture schemes, PM-KISAN, PM-KUSUM solar pump, PMFBY crop insurance, Kisan Credit Card, tractor subsidy, SMAM, drip irrigation subsidy, Jaivik Kheti, farming subsidies India',
+    canonicalPath: '/government-schemes',
+    ogType: 'website',
+    breadcrumbs: [
+      { name: 'Home', path: '/' },
+      { name: 'Government Schemes', path: '/government-schemes' }
+    ]
+  },
+  '/schemes': {
+    title: 'Government Agriculture Schemes & Subsidies | KisanMitra',
+    description: 'Explore 16+ verified Indian Central & State Government agriculture schemes, PM-KISAN ₹6,000 DBT, PM-KUSUM solar pump subsidy, PMFBY crop insurance, and Kisan Credit Card (KCC).',
+    canonicalPath: '/government-schemes',
+    ogType: 'website'
+  },
+  '/gov-schemes': {
+    title: 'Government Agriculture Schemes & Subsidies | KisanMitra',
+    description: 'Explore 16+ verified Indian Central & State Government agriculture schemes, PM-KISAN ₹6,000 DBT, PM-KUSUM solar pump subsidy, PMFBY crop insurance, and Kisan Credit Card (KCC).',
+    canonicalPath: '/government-schemes',
+    ogType: 'website'
+  },
+  '/agriculture-schemes': {
+    title: 'Government Agriculture Schemes & Subsidies | KisanMitra',
+    description: 'Explore 16+ verified Indian Central & State Government agriculture schemes, PM-KISAN ₹6,000 DBT, PM-KUSUM solar pump subsidy, PMFBY crop insurance, and Kisan Credit Card (KCC).',
+    canonicalPath: '/government-schemes',
     ogType: 'website'
   }
 };

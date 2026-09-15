@@ -9,6 +9,9 @@ const contactRoutes = require('./routes/contactRoutes');
 const newsletterRoutes = require('./routes/newsletterRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const seoRoutes = require('./routes/seoRoutes');
+const weatherRoutes = require('./routes/weatherRoutes');
+const cropRoutes = require('./routes/cropRoutes');
+const marketRoutes = require('./routes/marketRoutes');
 const seoController = require('./controllers/seoController');
 
 const app = express();
@@ -35,6 +38,9 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/seo', seoRoutes);
+app.use('/api/weather', weatherRoutes);
+app.use('/api/crop-advisory', cropRoutes);
+app.use('/api/market-prices', marketRoutes);
 
 // Server Init
 app.listen(PORT, () => {

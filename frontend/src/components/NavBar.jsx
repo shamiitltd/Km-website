@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
+import { showComingSoon } from "./ComingSoonModal";
 
 export default function NavBar() {
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -19,9 +20,10 @@ export default function NavBar() {
     <nav className="bg-[#123C26] sticky top-0 z-50 text-white px-4 md:px-8 py-4 w-full">
       <div className="flex justify-between items-center w-full">
         {/* Logo Area */}
-        <div className="font-bold text-xl flex items-center gap-2">
-          <span>KisanMitra</span>
-        </div>
+        <NavLink to="/" className="font-bold text-xl flex items-center gap-2.5 group">
+          <img src="/favicon.png?v=kisanmitra_v1" alt="KisanMitra Logo" className="w-8 h-8 rounded-full object-contain border border-emerald-400/30 group-hover:scale-105 transition-transform bg-white p-0.5" />
+          <span className="group-hover:text-[#80D939] transition-colors">KisanMitra</span>
+        </NavLink>
 
         {/* Desktop Links Area */}
         <ul className="hidden lg:flex space-x-6 xl:space-x-8 text-[1rem] font-semibold">
@@ -68,7 +70,10 @@ export default function NavBar() {
                 </div>
               )}
             </div>
-            <button className="bg-[#B0D939] text-[#123C26] font-semibold px-4 py-2 rounded hover:bg-[#9cc233] transition-colors">
+            <button 
+              onClick={() => showComingSoon('app', 'KisanMitra Mobile App', 'Get early VIP access and download notifications the moment the app goes live.', 'navbar_app')}
+              className="bg-[#B0D939] text-[#123C26] font-semibold px-4 py-2 rounded hover:bg-[#9cc233] transition-colors cursor-pointer"
+            >
                 Download App
             </button>
         </div>
@@ -127,7 +132,10 @@ export default function NavBar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-          <button className="w-full bg-[#B0D939] text-[#123C26] font-semibold px-4 py-3 rounded hover:bg-[#9cc233] transition-colors">
+          <button 
+            onClick={() => { setIsMobileMenuOpen(false); showComingSoon('app', 'KisanMitra Mobile App', 'Get early VIP access and download notifications the moment the app goes live.', 'navbar_app'); }}
+            className="w-full bg-[#B0D939] text-[#123C26] font-semibold px-4 py-3 rounded hover:bg-[#9cc233] transition-colors cursor-pointer"
+          >
               Download App
           </button>
         </div>

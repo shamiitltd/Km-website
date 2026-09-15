@@ -1,4 +1,5 @@
 import cta_plant from "../assets/cta_plant.png";
+import { showComingSoon } from "./ComingSoonModal";
 
 export default function FeaturesCTA() {
   return (
@@ -33,7 +34,10 @@ export default function FeaturesCTA() {
         {/* Right Side (Buttons) */}
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
           {/* Download Button */}
-          <button className="flex cursor-pointer items-center justify-center gap-2 bg-[#54B435] text-white px-7 py-3.5 rounded-xl font-bold text-[14px] md:text-[15px] hover:bg-[#45962b] transition-colors whitespace-nowrap w-full sm:w-auto">
+          <button 
+            onClick={() => showComingSoon('app')}
+            className="flex cursor-pointer items-center justify-center gap-2 bg-[#54B435] text-white px-7 py-3.5 rounded-xl font-bold text-[14px] md:text-[15px] hover:bg-[#45962b] transition-colors whitespace-nowrap w-full sm:w-auto shadow-md"
+          >
             Download App Now
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -41,7 +45,10 @@ export default function FeaturesCTA() {
           </button>
           
           {/* Watch Demo Button */}
-          <button className="flex items-center cursor-pointer justify-center gap-2 border border-white/30 text-white px-7 py-3.5 rounded-xl font-bold text-[14px] md:text-[15px] hover:bg-white/10 transition-colors whitespace-nowrap w-full sm:w-auto">
+          <button 
+            onClick={() => showComingSoon('demo')}
+            className="flex items-center cursor-pointer justify-center gap-2 border border-white/30 text-white px-7 py-3.5 rounded-xl font-bold text-[14px] md:text-[15px] hover:bg-white/10 transition-colors whitespace-nowrap w-full sm:w-auto"
+          >
             Watch Demo
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

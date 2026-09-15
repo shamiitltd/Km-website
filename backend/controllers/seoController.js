@@ -53,6 +53,9 @@ exports.getSitemapXml = async (req, res) => {
     const staticPages = [
       { path: '/', priority: '1.0', changefreq: 'daily' },
       { path: '/features', priority: '0.9', changefreq: 'weekly' },
+      { path: '/weather', priority: '0.9', changefreq: 'daily' },
+      { path: '/crop-advisory', priority: '0.9', changefreq: 'daily' },
+      { path: '/market-prices', priority: '0.9', changefreq: 'daily' },
       { path: '/how-it-works', priority: '0.8', changefreq: 'weekly' },
       { path: '/pricing', priority: '0.8', changefreq: 'weekly' },
       { path: '/about', priority: '0.7', changefreq: 'monthly' },

@@ -1,4 +1,5 @@
 import heroBg from "../assets/hero.png";
+import { showComingSoon } from "./ComingSoonModal";
 
 export default function HeroSection() {
   return (
@@ -71,7 +72,10 @@ export default function HeroSection() {
 
             {/* Buttons Row */}
             <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
-              <button className="w-full sm:w-auto flex items-center cursor-pointer justify-center space-x-2 bg-[#123C26] text-white px-8 py-3.5 rounded-lg font-semibold hover:bg-[#0d2a1a] transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5">
+              <button 
+                onClick={() => showComingSoon('app')}
+                className="w-full sm:w-auto flex items-center cursor-pointer justify-center space-x-2 bg-[#123C26] text-white px-8 py-3.5 rounded-lg font-semibold hover:bg-[#0d2a1a] transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
+              >
                 <span>Download App</span>
                 <svg
                   className="w-5 h-5"
@@ -87,7 +91,10 @@ export default function HeroSection() {
                   ></path>
                 </svg>
               </button>
-              <button className="w-full sm:w-auto flex items-center cursor-pointer justify-center space-x-2 bg-white text-[#123C26] border-2 border-[#2C8C44]/20 px-8 py-3.5 rounded-lg font-bold hover:border-[#2C8C44] hover:bg-gray-50 transition-all shadow-md hover:shadow-lg">
+              <button 
+                onClick={() => showComingSoon('demo')}
+                className="w-full sm:w-auto flex items-center cursor-pointer justify-center space-x-2 bg-white text-[#123C26] border-2 border-[#2C8C44]/20 px-8 py-3.5 rounded-lg font-bold hover:border-[#2C8C44] hover:bg-gray-50 transition-all shadow-md hover:shadow-lg"
+              >
                 <svg
                   className="w-5 h-5 text-[#2C8C44]"
                   fill="none"

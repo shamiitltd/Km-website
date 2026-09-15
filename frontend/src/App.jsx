@@ -9,16 +9,19 @@ import Pricing from './pages/Pricing'
 import Blog from './pages/Blog'
 import BlogPost from './pages/BlogPost'
 import Contact from './pages/Contact'
-import AdminBlog from './pages/AdminBlog'
-import AdminBroadcast from './pages/AdminBroadcast'
 import AdminDashboard from './pages/AdminDashboard'
 import NotFound from './pages/NotFound'
 import ComingSoon from './pages/ComingSoon'
 import TermsAndConditions from './pages/TermsAndConditions'
+import Weather from './pages/Weather'
+import CropAdvisory from './pages/CropAdvisory'
+import MarketPrices from './pages/MarketPrices'
+import GovernmentSchemes from './pages/GovernmentSchemes'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 import AnalyticsTracker from './components/AnalyticsTracker'
 import SeoManager from './components/SeoManager'
+import ComingSoonModal from './components/ComingSoonModal'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 
 function AppLayout() {
@@ -30,10 +33,23 @@ function AppLayout() {
       <ScrollToTop />
       <AnalyticsTracker />
       <SeoManager />
+      <ComingSoonModal />
       {!isAdminRoute && <NavBar />}
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/features' element={<Features />} />
+        <Route path='/weather' element={<Weather />} />
+        <Route path='/weather-updates' element={<Weather />} />
+        <Route path='/crop-advisory' element={<CropAdvisory />} />
+        <Route path='/advisory' element={<CropAdvisory />} />
+        <Route path='/market-prices' element={<MarketPrices />} />
+        <Route path='/mandi-prices' element={<MarketPrices />} />
+        <Route path='/marketplace' element={<MarketPrices />} />
+        <Route path='/market' element={<MarketPrices />} />
+        <Route path='/government-schemes' element={<GovernmentSchemes />} />
+        <Route path='/schemes' element={<GovernmentSchemes />} />
+        <Route path='/gov-schemes' element={<GovernmentSchemes />} />
+        <Route path='/agriculture-schemes' element={<GovernmentSchemes />} />
         <Route path='/how-it-works' element={<HowItWorks />} />
         <Route path='/about' element={<AboutUs />} />
         <Route path='/pricing' element={<Pricing />} />

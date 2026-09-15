@@ -1,0 +1,26 @@
+# Environment variables & secrets (Never commit!)
+.env
+.env.local
+.env.*.local
+*.env
+
+# Dependencies
+node_modules/
+dist/
+dist-ssr/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Database & SQLite
+*.db
+*.sqlite
+*.sqlite3
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/

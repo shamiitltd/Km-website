@@ -49,6 +49,10 @@ export default function AdminBroadcast({ embedded = false }) {
 
   const handleLogin = (e) => {
     e.preventDefault();
+    if (!password.trim()) {
+      setStatus({ type: 'warning', message: 'Please enter the administrator password.' });
+      return;
+    }
     if (password === 'admin123') {
       setIsAuthenticated(true);
       sessionStorage.setItem('km_admin_auth', 'true');
@@ -99,7 +103,15 @@ export default function AdminBroadcast({ embedded = false }) {
   // Dispatch Test Email
   const handleSendTestEmail = async (e) => {
     e.preventDefault();
-    if (!testEmail.trim()) return;
+    if (!testEmail.trim()) {
+      setTestStatus({ type: 'warning', message: 'Please enter a test email address.' });
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(testEmail.trim())) {
+      setTestStatus({ type: 'warning', message: 'Please enter a valid email format (e.g. admin@kisanmitra.com).' });
+      return;
+    }
 
     setIsSendingTest(true);
     setTestStatus({ type: '', message: '' });
@@ -151,7 +163,7 @@ export default function AdminBroadcast({ embedded = false }) {
       if (res.ok && data.success) {
         setStatus({
           type: 'success',
-          message: `✨ Broadcast successfully sent! Delivered to ${data.sent} of ${data.count} subscriber(s).`
+          message: `Broadcast successfully sent! Delivered to ${data.sent} of ${data.count} subscriber(s).`
         });
         setFormData(initialFormState);
         fetchStats();
@@ -166,6 +178,23 @@ export default function AdminBroadcast({ embedded = false }) {
     }
   };
 
+  const handleStartBroadcast = (e) => {
+    e.preventDefault();
+    if (!formData.subject.trim()) {
+      setStatus({ type: 'warning', message: 'Please provide an email subject line.' });
+      return;
+    }
+    if (!formData.heading.trim()) {
+      setStatus({ type: 'warning', message: 'Please provide an in-email headline title.' });
+      return;
+    }
+    if (!formData.message.trim()) {
+      setStatus({ type: 'warning', message: 'Please enter the message body for the broadcast.' });
+      return;
+    }
+    setShowConfirmModal(true);
+  };
+
   const inputClasses = "w-full px-4 py-3.5 bg-gray-50/70 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2C8C44]/40 focus:border-[#2C8C44] outline-none transition-all text-gray-800 text-sm";
   const labelClasses = "block text-[12px] font-bold text-gray-700 uppercase tracking-wider mb-2 ml-1";
 
@@ -174,12 +203,12 @@ export default function AdminBroadcast({ embedded = false }) {
     return (
       <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-green-50 via-gray-50 to-white flex items-center justify-center px-4 relative overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-        <div className="max-w-md w-full bg-white/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-green-900/10 border border-white p-10 relative z-10">
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-tr from-[#123C26] to-[#2C8C44] rounded-2xl flex items-center justify-center shadow-lg shadow-green-900/20">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-              </svg>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+
+        <div className="max-w-md w-full bg-white/80 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-green-900/5 border border-white p-10 relative z-10">
+          <div className="flex justify-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-tr from-[#123C26] to-[#2C8C44] rounded-2xl flex items-center justify-center shadow-lg shadow-green-900/20 transform -rotate-6 hover:rotate-0 transition-transform duration-500">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
             </div>
           </div>
           
@@ -189,19 +218,30 @@ export default function AdminBroadcast({ embedded = false }) {
           <p className="text-center text-gray-500 text-sm mb-8 font-medium">Administrator Access</p>
           
           {status.message && (
-            <div className="mb-6 p-4 rounded-xl text-sm font-semibold bg-red-50 border border-red-100 text-red-600">
-              {status.message}
+            <div className={`mb-6 p-4 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-2.5 border shadow-xs text-left ${
+              status.type === 'error'
+                ? 'bg-red-50/90 border-red-200 text-red-700'
+                : status.type === 'warning'
+                ? 'bg-gradient-to-r from-rose-50 to-amber-50/60 border-rose-200/90 text-rose-800'
+                : 'bg-green-50/90 border-green-200 text-green-700'
+            }`}>
+              <div className="w-5 h-5 rounded-full bg-black/5 flex items-center justify-center shrink-0">
+                {status.type === 'error' ? '!' : status.type === 'warning' ? '⚠' : '✓'}
+              </div>
+              <span>{status.message}</span>
             </div>
           )}
           
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} noValidate className="space-y-6">
             <input 
               type="password" 
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (status.message) setStatus({ type: '', message: '' });
+              }}
               className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2C8C44]/50 focus:border-[#2C8C44] outline-none text-center tracking-[0.25em] font-medium"
               placeholder="••••••••"
-              required
             />
             <button type="submit" className="w-full bg-gradient-to-r from-[#123C26] to-[#2C8C44] text-white py-4 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:shadow-green-900/40 transform hover:-translate-y-0.5 transition-all cursor-pointer">
               Authenticate Studio
@@ -218,81 +258,45 @@ export default function AdminBroadcast({ embedded = false }) {
         {/* TOP ADMIN QUICK NAVIGATION BAR */}
         {!embedded && (
           <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-6 border-b border-gray-200/60">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Link
-                to="/admin"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#EAF7ED] text-gray-700 hover:text-[#123C26] text-xs font-bold rounded-xl border border-gray-200 hover:border-[#123C26]/30 shadow-2xs transition-all"
+                to="/admin/dashboard"
+                className="text-xs font-bold text-gray-500 hover:text-[#2C8C44] transition-colors"
               >
-                <svg className="w-3.5 h-3.5 text-[#123C26]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                </svg>
-                <span>Command Center</span>
+                ← Back to Command Center
               </Link>
-              <span className="text-gray-300 text-xs">/</span>
-              <span className="text-xs font-bold bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200">
-                Broadcast Studio
-              </span>
+              <span className="text-gray-300">/</span>
+              <span className="text-xs font-bold text-[#123C26]">Broadcast Studio</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <Link
-                to="/admin/blog/new"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#EAF7ED] text-gray-700 hover:text-[#123C26] text-xs font-bold rounded-xl border border-gray-200 hover:border-[#123C26]/30 shadow-2xs transition-all"
-              >
-                <span className="text-xs">✍️</span>
-                <span>Blog Writer CMS</span>
-              </Link>
-              <button
-                onClick={() => {
-                  sessionStorage.removeItem('km_admin_auth');
-                  setIsAuthenticated(false);
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-red-50 text-gray-600 hover:text-red-600 text-xs font-medium rounded-xl border border-gray-200 hover:border-red-200 shadow-2xs transition-all cursor-pointer"
-              >
-                <span>Lock Studio</span>
-              </button>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200/80 rounded-2xl shadow-2xs">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-xs font-bold text-gray-700">Studio Ready</span>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Top Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-6 border-b border-gray-200/80 pb-6">
+        {/* TOP HEADER */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl sm:text-4xl font-black text-[#123C26] tracking-tight">
-                Newsletter & Broadcast Studio
-              </h1>
-              <span className="bg-[#EAF7ED] text-[#2C8C44] text-xs font-bold px-3 py-1 rounded-full border border-[#2C8C44]/30">
-                mail.shamiit.com SMTP
-              </span>
-            </div>
-            <p className="text-gray-600 text-sm font-medium">
-              Compose, preview, test, and broadcast email notifications to all subscribed farmers & members.
+            <h1 className="text-3xl sm:text-4xl font-black text-[#123C26] tracking-tight">
+              KisanMitra Broadcast Studio
+            </h1>
+            <p className="text-gray-600 text-sm mt-1">
+              Dispatch custom formatted newsletters and updates to all subscribers via SMTP.
             </p>
           </div>
 
-          {/* Navigation Controls */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex bg-white rounded-2xl p-1.5 border border-gray-200 shadow-xs">
-              <button
-                onClick={() => setActiveTab('compose')}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer ${
-                  activeTab === 'compose' ? 'bg-[#123C26] text-white shadow-xs' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
-                Compose Broadcast
-              </button>
-              <button
-                onClick={() => setActiveTab('history')}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer ${
-                  activeTab === 'history' ? 'bg-[#123C26] text-white shadow-xs' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Broadcast History
-              </button>
-            </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowTestModal(true)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 hover:text-[#2C8C44] hover:border-[#2C8C44]/40 shadow-xs transition-all cursor-pointer"
+            >
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+              Send Test Email
+            </button>
 
             <Link
               to="/admin/blog/new"
@@ -355,10 +359,20 @@ export default function AdminBroadcast({ embedded = false }) {
         {/* Global Feedback Banner */}
         {status.message && (
           <div className={`mb-8 p-5 rounded-2xl font-semibold flex items-center gap-3 border shadow-xs animate-fade-in ${
-            status.type === 'error' ? 'bg-red-50 text-red-800 border-red-200' : 'bg-[#EAF7ED] text-[#123C26] border-[#2C8C44]/30'
+            status.type === 'error'
+              ? 'bg-red-50 text-red-800 border-red-200'
+              : status.type === 'warning'
+              ? 'bg-gradient-to-r from-rose-50 to-amber-50/60 text-rose-900 border-rose-200/90'
+              : 'bg-[#EAF7ED] text-[#123C26] border-[#2C8C44]/30'
           }`}>
             {status.type === 'success' ? (
               <svg className="w-6 h-6 text-[#2C8C44] shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            ) : status.type === 'warning' ? (
+              <div className="w-6 h-6 rounded-full bg-rose-500/15 flex items-center justify-center shrink-0">
+                <svg className="w-4 h-4 text-rose-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
             ) : (
               <svg className="w-6 h-6 text-red-600 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             )}
@@ -376,7 +390,7 @@ export default function AdminBroadcast({ embedded = false }) {
                 <span>Compose Announcement</span>
               </h2>
 
-              <form onSubmit={(e) => { e.preventDefault(); setShowConfirmModal(true); }} className="space-y-6">
+              <form onSubmit={handleStartBroadcast} noValidate className="space-y-6">
                 
                 {/* Category Preset Pills */}
                 <div>
@@ -408,10 +422,9 @@ export default function AdminBroadcast({ embedded = false }) {
                   <input
                     type="text"
                     name="subject"
-                    required
                     value={formData.subject}
                     onChange={handleInputChange}
-                    placeholder="e.g. 🌱 KisanMitra Fair Pricing Plans Are Now Live!"
+                    placeholder="e.g. KisanMitra Fair Pricing Plans Are Now Live!"
                     className={`${inputClasses} font-semibold`}
                   />
                 </div>
@@ -422,7 +435,6 @@ export default function AdminBroadcast({ embedded = false }) {
                   <input
                     type="text"
                     name="heading"
-                    required
                     value={formData.heading}
                     onChange={handleInputChange}
                     placeholder="e.g. Empowering Your Fields With Fair & Accessible Tools"
@@ -448,7 +460,6 @@ export default function AdminBroadcast({ embedded = false }) {
                   <label className={labelClasses}>Message Body *</label>
                   <textarea
                     name="message"
-                    required
                     rows="7"
                     value={formData.message}
                     onChange={handleInputChange}
@@ -722,21 +733,30 @@ export default function AdminBroadcast({ embedded = false }) {
             </p>
 
             {testStatus.message && (
-              <div className={`mb-5 p-4 rounded-xl text-xs font-bold border ${
-                testStatus.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              <div className={`mb-5 p-4 rounded-xl text-xs font-semibold flex items-center gap-2.5 border shadow-xs text-left ${
+                testStatus.type === 'error'
+                  ? 'bg-red-50 text-red-700 border-red-200'
+                  : testStatus.type === 'warning'
+                  ? 'bg-gradient-to-r from-rose-50 to-amber-50/60 text-rose-900 border-rose-200/90'
+                  : 'bg-emerald-50 text-emerald-800 border-emerald-200'
               }`}>
-                {testStatus.message}
+                <div className="w-4 h-4 rounded-full bg-black/5 flex items-center justify-center shrink-0">
+                  {testStatus.type === 'error' ? '!' : testStatus.type === 'warning' ? '⚠' : '✓'}
+                </div>
+                <span>{testStatus.message}</span>
               </div>
             )}
 
-            <form onSubmit={handleSendTestEmail} className="space-y-5">
+            <form onSubmit={handleSendTestEmail} noValidate className="space-y-5">
               <div>
                 <label className={labelClasses}>Recipient Test Email</label>
                 <input
                   type="email"
-                  required
                   value={testEmail}
-                  onChange={(e) => setTestEmail(e.target.value)}
+                  onChange={(e) => {
+                    setTestEmail(e.target.value);
+                    if (testStatus.message) setTestStatus({ type: '', message: '' });
+                  }}
                   placeholder="e.g. yourname@example.com"
                   className={inputClasses}
                 />

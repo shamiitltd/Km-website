@@ -54,10 +54,10 @@ export default function Footer() {
         <div className="lg:col-span-1">
           <h4 className="text-white font-bold mb-2 text-[13px]">Resources</h4>
           <ul className="flex flex-col gap-2 text-[12px]">
-            <li><Link to="/features" className="hover:text-white transition-colors">Crop Advisory</Link></li>
-            <li><Link to="/features" className="hover:text-white transition-colors">Weather Updates</Link></li>
-            <li><Link to="/features" className="hover:text-white transition-colors">Market Prices</Link></li>
-            <li><Link to="/features" className="hover:text-white transition-colors">Government Schemes</Link></li>
+            <li><Link to="/crop-advisory" className="hover:text-white transition-colors">Crop Advisory</Link></li>
+            <li><Link to="/weather" className="hover:text-white transition-colors">Weather Updates</Link></li>
+            <li><Link to="/market-prices" className="hover:text-white transition-colors">Market Prices</Link></li>
+            <li><Link to="/government-schemes" className="hover:text-white transition-colors">Government Schemes</Link></li>
             <li><Link to="/contact" className="hover:text-white transition-colors">Help Center</Link></li>
             <li><Link to="/terms" className="hover:text-white transition-colors">Privacy Policy</Link></li>
           </ul>

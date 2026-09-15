@@ -312,10 +312,15 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
 
   const handleLogin = (e) => {
     e.preventDefault();
+    if (!password.trim()) {
+      setStatus({ type: 'warning', message: 'Please enter the administrator password.' });
+      return;
+    }
     if (password === 'admin123') { 
       setIsAuthenticated(true);
+      sessionStorage.setItem('km_admin_auth', 'true');
     } else {
-      setStatus({ type: 'error', message: 'Incorrect credentials' });
+      setStatus({ type: 'error', message: 'Invalid credentials. Please enter the correct administrator password.' });
     }
   };
 
@@ -385,12 +390,12 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
     if (e) e.preventDefault();
 
     if (!formData.title || !formData.title.trim()) {
-      setStatus({ type: 'error', message: 'Please provide an article title.' });
+      setStatus({ type: 'warning', message: 'Please provide an article title before saving.' });
       return;
     }
 
     if (!formData.imageUrl || !formData.imageUrl.trim()) {
-      setStatus({ type: 'error', message: 'Please upload or provide a cover photo for the article.' });
+      setStatus({ type: 'warning', message: 'Please upload or provide a cover photo for the article.' });
       return;
     }
 
@@ -419,13 +424,13 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
       });
 
       if (response.ok) {
-        let msg = editId ? 'Article updated successfully! ✨' : 'Article published successfully! ✨';
+        let msg = editId ? 'Article updated successfully!' : 'Article published successfully!';
         if (finalStatus === 'DRAFT') {
-          msg = editId ? 'Draft updated successfully! 📝' : 'Saved as draft! (Subscribers not notified) 📝';
+          msg = editId ? 'Draft updated successfully!' : 'Saved as draft! (Subscribers not notified)';
         } else if (finalStatus === 'SCHEDULED') {
-          msg = 'Article scheduled successfully! 🕒';
+          msg = 'Article scheduled successfully!';
         } else if (!editId && finalStatus === 'PUBLISHED') {
-          msg = 'Article published and broadcast to subscribers! 🚀';
+          msg = 'Article published and broadcast to subscribers!';
         }
 
         setStatus({ type: 'success', message: msg });
@@ -560,20 +565,31 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
           <p className="text-center text-gray-500 text-sm mb-8 font-medium">Secure Admin Access</p>
           
           {status.message && (
-            <div className={`mb-6 p-4 rounded-xl text-sm font-medium border ${status.type === 'error' ? 'bg-red-50/80 border-red-100 text-red-600' : 'bg-green-50/80 border-green-100 text-green-600'}`}>
-              {status.message}
+            <div className={`mb-6 p-4 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-2.5 border shadow-xs text-left ${
+              status.type === 'error'
+                ? 'bg-red-50/90 border-red-200 text-red-700'
+                : status.type === 'warning'
+                ? 'bg-gradient-to-r from-rose-50 to-amber-50/60 border-rose-200/90 text-rose-800'
+                : 'bg-green-50/90 border-green-200 text-green-700'
+            }`}>
+              <div className="w-5 h-5 rounded-full bg-black/5 flex items-center justify-center shrink-0">
+                {status.type === 'error' ? '!' : status.type === 'warning' ? '⚠' : '✓'}
+              </div>
+              <span>{status.message}</span>
             </div>
           )}
           
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} noValidate className="space-y-6">
             <div>
               <input 
                 type="password" 
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (status.message) setStatus({ type: '', message: '' });
+                }}
                 className="w-full px-5 py-4 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2C8C44]/50 focus:border-[#2C8C44] outline-none transition-all text-center tracking-[0.25em] font-medium"
                 placeholder="••••••••"
-                required
               />
             </div>
             <button type="submit" className="w-full bg-gradient-to-r from-[#123C26] to-[#2C8C44] text-white py-4 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:shadow-green-900/40 transform hover:-translate-y-1 transition-all duration-300 cursor-pointer">
@@ -654,7 +670,9 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
                 to="/admin/broadcast"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#EAF7ED] text-gray-700 hover:text-[#123C26] text-xs font-bold rounded-xl border border-gray-200 hover:border-[#123C26]/30 shadow-2xs transition-all"
               >
-                <span className="text-xs">📢</span>
+                <svg className="w-3.5 h-3.5 text-emerald-800" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.34 15.84c-.063.046-.128.09-.194.133L6.87 18.257a1.125 1.125 0 01-1.62-1.002V6.745a1.125 1.125 0 011.62-1.002l3.276 2.284c.066.043.131.087.194.133m0 7.68v-7.68m0 7.68A2.25 2.25 0 0012.59 18h2.036c.621 0 1.125-.504 1.125-1.125v-9.75c0-.621-.504-1.125-1.125-1.125H12.59a2.25 2.25 0 00-2.25 2.25m4.5 3.375h1.5a2.25 2.25 0 002.25-2.25v0a2.25 2.25 0 00-2.25-2.25h-1.5" />
+                </svg>
                 <span>Broadcast Studio</span>
               </Link>
               <Link
@@ -673,7 +691,11 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 mb-8 border-b border-gray-200/80">
           <div>
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🌱</span>
+              <div className="w-9 h-9 rounded-xl bg-emerald-100/80 text-[#123C26] flex items-center justify-center shrink-0 border border-emerald-200">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.38 2.25c-4.42 0-8 3.58-8 8 0 2.22.9 4.23 2.36 5.67-.14-.54-.23-1.11-.23-1.7 0-3.86 3.14-7 7-7 .59 0 1.16.09 1.7.23C14.77 4.15 13.68 2.25 12.38 2.25zM17.75 8.5c-3.87 0-7 3.13-7 7 0 .59.09 1.16.23 1.7 1.44-1.46 2.34-3.48 2.34-5.7 0-.58-.09-1.15-.24-1.69 1.25.75 2.17 2.05 2.47 3.59.13-.61.2-1.25.2-1.9 0-1.66-1.34-3-3-3z"/>
+                </svg>
+              </div>
               <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">
                 {editId ? 'Edit Blog Post' : 'Create a New Blog Post'}
               </h1>
@@ -797,22 +819,34 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
 
         {/* STATUS BANNER */}
         {status.message && (
-          <div className={`mb-8 p-4 rounded-2xl font-medium flex items-center justify-between gap-3 border shadow-xs ${status.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-[#E8F5EA] text-[#123C26] border-[#A6CDB3]/40'}`}>
+          <div className={`mb-8 p-4 rounded-2xl font-medium flex items-center justify-between gap-3 border shadow-xs ${
+            status.type === 'error'
+              ? 'bg-red-50 text-red-700 border-red-200'
+              : status.type === 'warning'
+              ? 'bg-gradient-to-r from-rose-50 to-amber-50/60 text-rose-900 border-rose-200/90'
+              : 'bg-[#E8F5EA] text-[#123C26] border-[#A6CDB3]/40'
+          }`}>
             <div className="flex items-center gap-3">
               {status.type === 'success' ? (
                 <svg className="w-5 h-5 text-[#2C8C44] shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              ) : status.type === 'warning' ? (
+                <div className="w-5 h-5 rounded-full bg-rose-500/15 flex items-center justify-center shrink-0">
+                  <svg className="w-3.5 h-3.5 text-rose-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
               ) : (
                 <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
               )}
               <span className="text-sm font-semibold">{status.message}</span>
             </div>
-            <button onClick={() => setStatus({ type: '', message: '' })} className="text-xs text-gray-400 hover:text-gray-700">✕</button>
+            <button onClick={() => setStatus({ type: '', message: '' })} className="text-xs text-gray-400 hover:text-gray-700 cursor-pointer">✕</button>
           </div>
         )}
 
         {/* WRITE TAB - DUAL COLUMN LAYOUT EXACTLY MATCHING MOCKUP */}
         {activeTab === 'write' && (
-          <form onSubmit={(e) => handleSubmit(e, formData.status)} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <form onSubmit={(e) => handleSubmit(e, formData.status)} noValidate className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             {/* ================= LEFT MAIN COLUMN (7 cols) ================= */}
             <div className="lg:col-span-8 space-y-6">
@@ -835,7 +869,6 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-gray-50/60 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2C8C44]/40 focus:border-[#2C8C44] outline-none text-base font-semibold text-gray-800 placeholder-gray-400 transition-all"
                   placeholder="Enter a captivating headline..."
-                  required
                 />
               </div>
 
@@ -862,7 +895,12 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
                       <option value="Success Stories">Success Stories</option>
                       <option value="Pest Management">Pest Management</option>
                     </select>
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-base">🌱</span>
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <svg className="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+                      </svg>
+                    </div>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                     </div>
@@ -883,7 +921,11 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
                       className="w-full pl-9 pr-4 py-2.5 bg-gray-50/60 border border-gray-200 rounded-xl text-sm font-semibold text-gray-800 focus:bg-white focus:ring-2 focus:ring-[#2C8C44]/40 focus:border-[#2C8C44] outline-none"
                       placeholder="e.g. 5 min read"
                     />
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-base">⏱️</span>
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1052,7 +1094,9 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
                 {/* Bottom Tip Bar matching mockup */}
                 <div className="mt-3 flex items-center justify-between text-xs text-gray-500 font-medium px-1">
                   <div className="flex items-center gap-1.5">
-                    <span>💡</span>
+                    <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a3.75 3.75 0 10-3.75-3.75c0 .671.18 1.3.497 1.847L9.75 12.75h4.5l1.003-1.903A3.748 3.748 0 0015.75 9a3.75 3.75 0 00-3.75-3.75zm-1.5 8.25h3" />
+                    </svg>
                     <span>Tip: You can paste images directly, drag & drop, or click the image icon to insert.</span>
                   </div>
                   <span className="font-mono text-gray-400">{wordCount} words</span>
@@ -1067,7 +1111,9 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
               {/* CARD 1: POST DETAILS */}
               <div className="bg-white rounded-2xl border border-gray-200/90 p-6 shadow-xs space-y-5">
                 <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
-                  <span className="text-lg">📄</span>
+                  <svg className="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
                   <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider">Post Details</h3>
                 </div>
 
@@ -1105,7 +1151,11 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
                       onChange={handleInputChange}
                       className="w-full pl-9 pr-3 py-2 bg-gray-50/60 border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 focus:bg-white focus:ring-2 focus:ring-[#2C8C44]/40 outline-none"
                     />
-                    <span className="absolute left-3 top-2.5 text-xs text-gray-400">📅</span>
+                    <div className="absolute left-3 top-2.5 pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.253M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
 
@@ -1121,7 +1171,11 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
                       className="w-full pl-9 pr-3 py-2 bg-gray-50/60 border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 focus:bg-white focus:ring-2 focus:ring-[#2C8C44]/40 outline-none"
                       placeholder="Kisan Mitra Team"
                     />
-                    <span className="absolute left-3 top-2.5 text-xs text-gray-400">👥</span>
+                    <div className="absolute left-3 top-2.5 pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1129,7 +1183,10 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
               {/* CARD 2: TAGS */}
               <div className="bg-white rounded-2xl border border-gray-200/90 p-6 shadow-xs space-y-4">
                 <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
-                  <span className="text-lg">🏷️</span>
+                  <svg className="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+                  </svg>
                   <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider">Tags</h3>
                 </div>
 
@@ -1197,7 +1254,9 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
               {/* CARD 3: SEO SETTINGS */}
               <div className="bg-white rounded-2xl border border-gray-200/90 p-6 shadow-xs space-y-4">
                 <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
-                  <span className="text-lg">🔍</span>
+                  <svg className="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
                   <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider">SEO Settings</h3>
                 </div>
 
@@ -1342,7 +1401,11 @@ export default function AdminBlog({ embedded = false, initialMode = 'write' }) {
               </div>
             ) : blogs.length === 0 ? (
               <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-                <span className="text-3xl block mb-2">📝</span>
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100/70 text-[#123C26] flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                </div>
                 <p className="text-gray-600 font-bold text-sm">No blog posts found.</p>
                 <p className="text-xs text-gray-400 mt-1">Start writing your first agricultural article!</p>
               </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import cta_hiw from "../assets/cta_hiw.png";
+import { showComingSoon } from "./ComingSoonModal";
 
 export default function HowItWorksCTA() {
   return (
@@ -12,7 +13,7 @@ export default function HowItWorksCTA() {
           {/* Logo Placeholder */}
           <div className="w-[80px] h-[100px] md:w-[100px] md:h-[90px] flex-shrink-0 flex items-center justify-center">
              <img 
-               src={cta_hiw}
+               src={cta_hiw} 
                alt="App Logo" 
                className="w-full h-full object-contain" 
              />
@@ -31,7 +32,10 @@ export default function HowItWorksCTA() {
         {/* Right Side: Buttons */}
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
           {/* Download App Button */}
-          <button className="w-full sm:w-auto bg-[#6CB937] hover:bg-[#5ca62b] text-white px-7 py-3 rounded-xl font-semibold flex items-center justify-center gap-3 transition-colors shadow-lg">
+          <button 
+            onClick={() => showComingSoon('app')}
+            className="w-full sm:w-auto bg-[#6CB937] hover:bg-[#5ca62b] text-white px-7 py-3 rounded-xl font-semibold flex items-center justify-center gap-3 transition-colors shadow-lg cursor-pointer"
+          >
             Download App
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
@@ -39,7 +43,10 @@ export default function HowItWorksCTA() {
           </button>
           
           {/* Watch Demo Button */}
-          <button className="w-full sm:w-auto bg-transparent hover:bg-white/10 text-white border border-white/30 px-7 py-3 rounded-xl font-semibold flex items-center justify-center gap-3 transition-colors">
+          <button 
+            onClick={() => showComingSoon('demo')}
+            className="w-full sm:w-auto bg-transparent hover:bg-white/10 text-white border border-white/30 px-7 py-3 rounded-xl font-semibold flex items-center justify-center gap-3 transition-colors cursor-pointer"
+          >
             Watch Demo
             <svg className="w-6 h-6 opacity-90" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
