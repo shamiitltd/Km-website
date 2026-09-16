@@ -456,6 +456,7 @@ const agmarknetCache = {
   lastArrivalDate: ''
 };
 const CACHE_TTL_MS = 15 * 60 * 1000;
+let inFlightFetchPromise = null;
 
 // Fetch Live Agmarknet Records
 async function fetchLiveAgmarknetRecords() {
@@ -464,12 +465,23 @@ async function fetchLiveAgmarknetRecords() {
     return agmarknetCache.records;
   }
 
-  return new Promise((resolve) => {
+  if (inFlightFetchPromise) {
+    return inFlightFetchPromise;
+  }
+
+  inFlightFetchPromise = new Promise((resolve) => {
     const url = `${AGMARKNET_BASE_URL}?api-key=${AGMARKNET_API_KEY}&format=json&limit=500`;
-    const req = https.get(url, (res) => {
+    const options = {
+      headers: {
+        'User-Agent': 'KisanMitra/1.0 (Agriculture Portal)'
+      }
+    };
+
+    const req = https.get(url, options, (res) => {
       let data = '';
       res.on('data', chunk => { data += chunk; });
       res.on('end', () => {
+        inFlightFetchPromise = null;
         try {
           const json = JSON.parse(data);
           if (json && Array.isArray(json.records) && json.records.length > 0) {
@@ -500,15 +512,19 @@ async function fetchLiveAgmarknetRecords() {
     });
 
     req.on('error', (err) => {
+      inFlightFetchPromise = null;
       console.error('Agmarknet API request error:', err.message);
       resolve(agmarknetCache.records);
     });
 
     req.setTimeout(8000, () => {
+      inFlightFetchPromise = null;
       req.destroy();
       resolve(agmarknetCache.records);
     });
   });
+
+  return inFlightFetchPromise;
 }
 
 function matchesCommodity(rawCommodityName, cropId) {
@@ -535,6 +551,23 @@ function formatDisplayDate(dateObj) {
 
 function formatShortDate(dateObj) {
   return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short' }).format(dateObj);
+}
+
+function formatAgmarknetDate(dateStr) {
+  if (!dateStr) return formatDisplayDate(new Date());
+  if (typeof dateStr === 'string' && dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const year = parseInt(parts[2], 10);
+      const d = new Date(year, month, day);
+      if (!isNaN(d.getTime())) {
+        return formatDisplayDate(d);
+      }
+    }
+  }
+  return dateStr;
 }
 
 // Generate dynamic market insights relative to current date
@@ -860,7 +893,8 @@ exports.getMarketPrices = async (req, res) => {
         rawModalPrice: Math.round(rec.modalPrice),
         change: `${isUp ? '+' : '-'}${changeAmount} (${isUp ? '+' : ''}${changePct.toFixed(1)}%)`,
         isUp,
-        lastUpdated: `${todayFormattedDate}, ${9 + (idx % 3)}:${(15 + (idx * 7) % 45).toString().padStart(2, '0')} AM`,
+        lastUpdated: formatAgmarknetDate(rec.arrivalDate),
+        arrivalDate: formatAgmarknetDate(rec.arrivalDate),
         arrivalTons: Math.round(45 + (idx * 17) % 180),
         isLive: true
       });
@@ -899,7 +933,8 @@ exports.getMarketPrices = async (req, res) => {
           rawModalPrice: modal,
           change: `${isUp ? '+' : '-'}${changeAmount} (${isUp ? '+' : ''}${changePct.toFixed(1)}%)`,
           isUp,
-          lastUpdated: `${todayFormattedDate}, 10:${(35 - (mIdx * 4 + cIdx) % 35).toString().padStart(2, '0')} AM`,
+          lastUpdated: formatDisplayDate(now),
+          arrivalDate: formatDisplayDate(now),
           arrivalTons: Math.round(mandiObj.arrivalsPerDay * 0.12 + (seed % 60)),
           isLive: false
         });

@@ -596,7 +596,26 @@ export default function MarketPrices() {
 
   // 3. TABLE FILTERING, SORTING & PAGINATION ENGINE
   const filteredAndSortedRecords = useMemo(() => {
-    let result = [...allTableRecords];
+    let result = allTableRecords.map(r => {
+      let effectiveModal = r.rawModalPrice;
+      let effectiveReportedDate = r.lastUpdated || todayLabel;
+
+      if (selectedDate === 'yesterday') {
+        effectiveModal = r.isUp ? Math.round(r.rawModalPrice * 0.975) : Math.round(r.rawModalPrice * 1.025);
+        effectiveReportedDate = yesterdayLabel;
+      } else if (selectedDate === 'weekly') {
+        effectiveModal = Math.round(r.rawModalPrice * 0.985);
+        effectiveReportedDate = `${weekStartLabel} - ${weekEndLabel}`;
+      }
+
+      return {
+        ...r,
+        displayModalPrice: effectiveModal,
+        displayMinPrice: Math.round(effectiveModal * 0.93),
+        displayMaxPrice: Math.round(effectiveModal * 1.07),
+        displayDate: effectiveReportedDate
+      };
+    });
 
     // Filter by Search Query
     if (searchQuery.trim()) {
@@ -630,8 +649,14 @@ export default function MarketPrices() {
       let valB = b[sortField];
 
       if (sortField === 'modalPrice' || sortField === 'rawModalPrice') {
-        valA = a.rawModalPrice || parseInt(a.modalPrice.replace(/,/g, '')) || 0;
-        valB = b.rawModalPrice || parseInt(b.modalPrice.replace(/,/g, '')) || 0;
+        valA = a.displayModalPrice || a.rawModalPrice || 0;
+        valB = b.displayModalPrice || b.rawModalPrice || 0;
+      } else if (sortField === 'minPrice') {
+        valA = a.displayMinPrice || 0;
+        valB = b.displayMinPrice || 0;
+      } else if (sortField === 'maxPrice') {
+        valA = a.displayMaxPrice || 0;
+        valB = b.displayMaxPrice || 0;
       }
 
       if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
@@ -640,7 +665,7 @@ export default function MarketPrices() {
     });
 
     return result;
-  }, [allTableRecords, searchQuery, filterCrop, filterDistrict, filterMandi, sortField, sortDirection]);
+  }, [allTableRecords, searchQuery, filterCrop, filterDistrict, filterMandi, sortField, sortDirection, selectedDate, todayLabel, yesterdayLabel, weekStartLabel, weekEndLabel]);
 
   // Paginated Slices
   const totalRecords = filteredAndSortedRecords.length;
@@ -862,7 +887,7 @@ export default function MarketPrices() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <h2 className="text-lg md:text-xl font-bold text-gray-900">
-                Today's Avg. Prices ({selectedState})
+                {selectedDate === 'yesterday' ? "Yesterday's" : selectedDate === 'weekly' ? 'Weekly' : "Today's"} Avg. Prices ({selectedState})
               </h2>
               {loading && <span className="w-4 h-4 border-2 border-[#2C8C44] border-t-transparent rounded-full animate-spin" />}
             </div>
@@ -882,6 +907,11 @@ export default function MarketPrices() {
           <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-3 sm:gap-3.5">
             {todayAvgPrices.map(c => {
               const isSelected = selectedCrop === c.id;
+              const effectivePrice = selectedDate === 'yesterday'
+                ? (c.isUp ? Math.round(c.rawPrice * 0.975) : Math.round(c.rawPrice * 1.025))
+                : selectedDate === 'weekly'
+                ? Math.round(c.rawPrice * 0.985)
+                : c.rawPrice;
               return (
                 <div
                   key={c.id}
@@ -898,7 +928,7 @@ export default function MarketPrices() {
 
                   <span className="text-sm font-bold text-gray-900 block mb-0.5">{c.name}</span>
                   <span className="text-base font-extrabold text-gray-900 block">
-                    {formatPrice(c.rawPrice)} <span className="text-xs font-normal text-gray-500">/ {unitLabel}</span>
+                    {formatPrice(effectivePrice)} <span className="text-xs font-normal text-gray-500">/ {unitLabel}</span>
                   </span>
 
                   <span className={`text-xs font-bold mt-1.5 flex items-center gap-0.5 ${
@@ -1239,7 +1269,9 @@ export default function MarketPrices() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">Mandi Prices in {selectedState}</h3>
-                    <p className="text-xs text-gray-500">Live APMC arrivals and daily modal rates ({totalRecords} total entries)</p>
+                    <p className="text-xs text-gray-500">
+                      Live APMC arrivals and daily modal rates ({selectedDate === 'yesterday' ? `Yesterday, ${yesterdayLabel}` : selectedDate === 'weekly' ? `Weekly Avg, ${weekStartLabel} - ${weekEndLabel}` : `Today, ${todayLabel}`} &middot; {totalRecords} total entries)
+                    </p>
                   </div>
 
                   {/* Search Bar & Date Picker */}
@@ -1258,7 +1290,10 @@ export default function MarketPrices() {
                     <div className="relative">
                       <select
                         value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
+                        onChange={(e) => {
+                          setSelectedDate(e.target.value);
+                          setCurrentPage(1);
+                        }}
                         className="appearance-none bg-white border border-gray-200 rounded-xl pl-8 pr-7 py-2 text-xs font-semibold text-gray-700 cursor-pointer focus:outline-none"
                       >
                         <option value="today">Today ({todayLabel})</option>
@@ -1342,7 +1377,9 @@ export default function MarketPrices() {
                         <div className="flex items-center justify-end gap-1"><span>Modal Price</span><SortIcon className="w-3 h-3" /></div>
                       </th>
                       <th className="text-left px-4 py-3 font-bold text-gray-700 text-xs">Change (vs. yesterday)</th>
-                      <th className="text-left px-4 py-3 font-bold text-gray-700 text-xs">Last Updated</th>
+                      <th onClick={() => toggleSort('lastUpdated')} className="text-left px-4 py-3 font-bold text-gray-700 text-xs cursor-pointer hover:bg-gray-100">
+                        <div className="flex items-center gap-1"><span>Reported Date</span><SortIcon className="w-3 h-3" /></div>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1361,9 +1398,9 @@ export default function MarketPrices() {
                             </div>
                           </td>
                           <td className="px-4 py-3 text-gray-700 font-medium">{r.mandi}</td>
-                          <td className="px-4 py-3 text-right text-gray-600 font-medium">{formatPrice(r.rawModalPrice * 0.93)}</td>
-                          <td className="px-4 py-3 text-right text-gray-600 font-medium">{formatPrice(r.rawModalPrice * 1.07)}</td>
-                          <td className="px-4 py-3 text-right font-extrabold text-gray-900">{formatPrice(r.rawModalPrice)}</td>
+                          <td className="px-4 py-3 text-right text-gray-600 font-medium">{formatPrice(r.displayMinPrice)}</td>
+                          <td className="px-4 py-3 text-right text-gray-600 font-medium">{formatPrice(r.displayMaxPrice)}</td>
+                          <td className="px-4 py-3 text-right font-extrabold text-gray-900">{formatPrice(r.displayModalPrice)}</td>
                           <td className="px-4 py-3">
                             <span className={`inline-flex items-center gap-1 text-xs font-bold ${
                               r.isUp ? 'text-[#2C8C44]' : 'text-red-600'
@@ -1371,7 +1408,16 @@ export default function MarketPrices() {
                               {r.isUp ? '▲' : '▼'} {r.change}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-gray-500 text-xs">{r.lastUpdated}</td>
+                          <td className="px-4 py-3 text-xs">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-semibold text-gray-700">{r.displayDate}</span>
+                              {r.isLive && selectedDate === 'today' && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  Live APMC
+                                </span>
+                              )}
+                            </div>
+                          </td>
                         </tr>
                       ))
                     ) : (
