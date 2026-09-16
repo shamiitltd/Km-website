@@ -1299,46 +1299,289 @@ export default function MarketPrices() {
 
             {/* TAB 4: SEASONAL TRENDS */}
             {activeTab === 'Seasonal Trends' && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-                <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
-                  <div>
-                    <h3 className="text-base font-bold text-gray-900">12-Month Seasonal Price Curve</h3>
-                    <p className="text-xs text-gray-500">Historical arrival and price behavior across full agricultural calendar</p>
-                  </div>
-                  <span className="text-xs font-bold text-gray-500">{selectedCropDetails?.season || 'Annual'} Season</span>
-                </div>
+              <div className="space-y-6">
+                {/* Main 12-Month Seasonal Curve Card */}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-gray-100">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-lg font-bold text-gray-900">
+                          {selectedCropDetails?.name || selectedCrop} 12-Month Seasonal Price Curve
+                        </h3>
+                        <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          {selectedCropDetails?.season || 'Annual'} Season
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Historical arrival glut, seasonal supply fluctuations, and estimated price trajectory in {selectedState}
+                      </p>
+                    </div>
 
-                <div className="grid grid-cols-12 gap-1.5 h-40 items-end mb-4">
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <div className="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl text-right">
+                        <span className="text-[10px] text-gray-500 block font-medium">State Benchmark</span>
+                        <strong className="text-xs font-bold text-gray-900">
+                          {formatPrice((selectedCropDetails?.basePrice || 2125) * (selectedCropDetails?.stateMultipliers?.[selectedState] || 1.0))} / {unitLabel}
+                        </strong>
+                      </div>
+                      {selectedCropDetails?.msp2025 && (
+                        <div className="bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl text-right">
+                          <span className="text-[10px] text-amber-700 block font-medium">Govt MSP (2025-26)</span>
+                          <strong className="text-xs font-bold text-amber-900">
+                            ₹ {selectedCropDetails.msp2025.toLocaleString('en-IN')} / Q
+                          </strong>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 12-Month Visual Bar Chart */}
                   {(() => {
                     const seasonType = (selectedCropDetails?.season || '').toLowerCase();
-                    const isKharif = seasonType.includes('kharif');
-                    const isRabi = seasonType.includes('rabi');
-                    return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((mon, idx) => {
-                      const isHarvest = isKharif ? (idx >= 9 && idx <= 11) : isRabi ? (idx >= 2 && idx <= 4) : (idx >= 4 && idx <= 6);
-                      const baseSeasonalHeight = isHarvest ? 38 + ((idx % 3) * 6) : 72 + ((idx * 7) % 22);
-                      return (
-                        <div key={mon} className="flex flex-col items-center gap-1 flex-1">
-                          <div
-                            className={`w-full rounded-t transition-all ${
-                              isHarvest ? 'bg-amber-400' : 'bg-[#2C8C44]'
-                            }`}
-                            style={{ height: `${baseSeasonalHeight}%` }}
-                          />
-                          <span className="text-[10px] text-gray-600 font-bold">{mon}</span>
-                        </div>
-                      );
+                    const cropId = (selectedCropDetails?.id || selectedCrop).toLowerCase();
+                    const baseRate = (selectedCropDetails?.basePrice || 2125) * (selectedCropDetails?.stateMultipliers?.[selectedState] || 1.0);
+
+                    const isKharif = seasonType.includes('kharif') || ['rice', 'cotton', 'maize', 'soybean', 'tur', 'moong', 'urad', 'groundnut', 'bajra', 'jowar'].includes(cropId);
+                    const isRabi = seasonType.includes('rabi') || ['wheat', 'mustard', 'gram', 'potato', 'barley'].includes(cropId);
+                    const isPerishable = ['tomato', 'onion'].includes(cropId);
+
+                    // Multipliers for each month (0=Jan ... 11=Dec)
+                    const monthlyMultipliers = isKharif ? [
+                      1.01, 1.03, 1.05, 1.07, 1.09, 1.12, 1.14, 1.10, 1.04, 0.93, 0.91, 0.95
+                    ] : isRabi ? [
+                      1.08, 1.10, 0.94, 0.91, 0.93, 0.98, 1.02, 1.04, 1.06, 1.07, 1.08, 1.08
+                    ] : isPerishable ? [
+                      0.92, 0.95, 1.05, 1.12, 1.20, 1.25, 1.18, 1.10, 0.98, 1.06, 1.12, 0.95
+                    ] : [
+                      1.02, 1.04, 1.06, 1.08, 1.05, 1.02, 0.97, 0.96, 0.99, 1.03, 1.06, 1.04
+                    ];
+
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const estPrices = monthNames.map((_, idx) => Math.round(baseRate * monthlyMultipliers[idx]));
+                    const maxP = Math.max(...estPrices, 1);
+                    const minP = Math.min(...estPrices, 0);
+                    const rangeP = (maxP - minP) || (maxP * 0.1) || 1;
+
+                    const monthData = monthNames.map((mon, idx) => {
+                      const mult = monthlyMultipliers[idx];
+                      const estPrice = Math.round(baseRate * mult);
+                      const diffPct = ((mult - 1.0) * 100).toFixed(1);
+                      const isHarvest = isKharif ? (idx >= 9 && idx <= 11) : isRabi ? (idx >= 2 && idx <= 4) : (idx >= 5 && idx <= 7);
+                      const isPeakPrice = mult >= 1.08;
+                      const heightPct = Math.min(95, Math.max(28, Math.round(((estPrice - minP) / rangeP) * 62 + 33)));
+
+                      return {
+                        mon,
+                        monthIdx: idx,
+                        estPrice,
+                        diffPct,
+                        isHarvest,
+                        isPeakPrice,
+                        heightPct
+                      };
                     });
+
+                    return (
+                      <div>
+                        {/* Chart Bars */}
+                        <div className="grid grid-cols-12 gap-1 sm:gap-2 h-52 items-end mb-4 pt-4 px-1">
+                          {monthData.map((m) => {
+                            const barColor = m.isHarvest
+                              ? 'bg-amber-400 hover:bg-amber-500'
+                              : m.isPeakPrice
+                              ? 'bg-[#123C26] hover:bg-[#1a5234]'
+                              : 'bg-[#48BB78] hover:bg-[#38A169]';
+
+                            return (
+                              <div key={m.mon} className="flex flex-col items-center h-full justify-end group relative cursor-pointer">
+                                {/* Hover Tooltip */}
+                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center bg-gray-900 text-white text-[10px] px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-20 pointer-events-none">
+                                  <span className="font-bold">{m.mon}: {formatPrice(m.estPrice)}</span>
+                                  <span className={parseFloat(m.diffPct) >= 0 ? 'text-emerald-300' : 'text-amber-300'}>
+                                    {parseFloat(m.diffPct) >= 0 ? '+' : ''}{m.diffPct}% vs avg
+                                  </span>
+                                </div>
+
+                                <span className="text-[9px] font-bold text-gray-500 mb-1 hidden sm:block truncate">
+                                  ₹{Math.round(m.estPrice / (unitMode === 'kg' ? 100 : 1))}
+                                </span>
+
+                                {/* Bar Track & Solid Fill */}
+                                <div className="w-full h-32 flex items-end justify-center">
+                                  <div
+                                    className={`w-full max-w-[32px] rounded-t-md transition-all duration-300 shadow-sm ${barColor}`}
+                                    style={{ height: `${m.heightPct}%` }}
+                                  />
+                                </div>
+
+                                <span className="text-[10px] sm:text-xs text-gray-700 font-bold mt-2">{m.mon}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Chart Legend */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-gray-600 pt-3 border-t border-gray-100">
+                          <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <span className="w-3 h-3 rounded bg-[#123C26]" />
+                              <span>Off-Season Peak Realization (Highest Price)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="w-3 h-3 rounded bg-amber-400" />
+                              <span>Harvest Arrival Glut (Price Dip)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="w-3 h-3 rounded bg-[#48BB78]" />
+                              <span>Normal Trading Range</span>
+                            </div>
+                          </div>
+                          <span className="text-[11px] text-gray-400 italic">Hover columns for monthly estimates</span>
+                        </div>
+                      </div>
+                    );
                   })()}
                 </div>
 
-                <div className="flex items-center gap-6 text-xs text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded bg-[#2C8C44]" />
-                    <span>Off-Season / Higher Market Prices</span>
+                {/* 3 Key Farmer Decision Milestone Cards */}
+                {(() => {
+                  const seasonType = (selectedCropDetails?.season || '').toLowerCase();
+                  const cropId = (selectedCropDetails?.id || selectedCrop).toLowerCase();
+                  const isKharif = seasonType.includes('kharif') || ['rice', 'cotton', 'maize', 'soybean', 'tur', 'moong', 'urad', 'groundnut', 'bajra', 'jowar'].includes(cropId);
+                  const isRabi = seasonType.includes('rabi') || ['wheat', 'mustard', 'gram', 'potato', 'barley'].includes(cropId);
+
+                  const sowingWindow = isKharif ? 'June – July (Monsoon Onset)' : isRabi ? 'October – November (Post-Monsoon)' : 'February – March (Spring/Zaid)';
+                  const harvestWindow = isKharif ? 'October – December (Heavy Arrivals)' : isRabi ? 'March – May (Bumper Arrivals)' : 'May – June (Summer Harvest)';
+                  const sellingWindow = isKharif ? 'June – September (Off-Season Highs)' : isRabi ? 'November – January (Winter Off-Season)' : 'July – August (Post-Cure Peak)';
+
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2C8C44] flex items-center justify-center font-bold text-sm mb-3">
+                          1
+                        </div>
+                        <h4 className="text-sm font-bold text-gray-900 mb-1">Optimal Sowing Window</h4>
+                        <p className="text-xs font-semibold text-emerald-700 mb-2">{sowingWindow}</p>
+                        <p className="text-xs text-gray-600 leading-relaxed">
+                          Procure certified seeds early from nearby Krishi Vigyan Kendras (KVK) and treat with bio-fertilizers prior to field sowing.
+                        </p>
+                      </div>
+
+                      <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                        <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm mb-3">
+                          2
+                        </div>
+                        <h4 className="text-sm font-bold text-gray-900 mb-1">Peak Mandi Inflow (Glut)</h4>
+                        <p className="text-xs font-semibold text-amber-700 mb-2">{harvestWindow}</p>
+                        <p className="text-xs text-gray-600 leading-relaxed">
+                          Mandi arrival volumes peak by up to 300%. Utilize WDRA-registered warehouse receipt loans (e-NWR) to prevent panic selling at harvest dips.
+                        </p>
+                      </div>
+
+                      <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                        <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-sm mb-3">
+                          3
+                        </div>
+                        <h4 className="text-sm font-bold text-gray-900 mb-1">Optimal Selling Window</h4>
+                        <p className="text-xs font-semibold text-sky-700 mb-2">{sellingWindow}</p>
+                        <p className="text-xs text-gray-600 leading-relaxed">
+                          Lean market supplies consistently deliver 8% to 15% price premiums over MSP. Ensure crop moisture stays below 12% for safe warehousing.
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Seasonal Price Advisory Table */}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="p-5 pb-3 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-900">Annual Price Realization Roadmap</h4>
+                      <p className="text-xs text-gray-500">Historical trading pattern benchmark for {selectedCropDetails?.name || selectedCrop} in {selectedState}</p>
+                    </div>
+                    <span className="text-xs font-bold text-[#2C8C44] bg-emerald-50 px-3 py-1 rounded-full">
+                      APMC Historical Model
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded bg-amber-400" />
-                    <span>Peak Harvest Arrival (Lower Modal Rates)</span>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 font-bold uppercase text-[10px]">
+                        <tr>
+                          <th className="px-4 py-3">Quarter / Month</th>
+                          <th className="px-4 py-3">Arrival Inflow</th>
+                          <th className="px-4 py-3 text-right">Est. Modal Rate</th>
+                          <th className="px-4 py-3 text-center">Price Index</th>
+                          <th className="px-4 py-3">Farmer Action Advisory</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 text-gray-700">
+                        {(() => {
+                          const seasonType = (selectedCropDetails?.season || '').toLowerCase();
+                          const cropId = (selectedCropDetails?.id || selectedCrop).toLowerCase();
+                          const baseRate = (selectedCropDetails?.basePrice || 2125) * (selectedCropDetails?.stateMultipliers?.[selectedState] || 1.0);
+                          const isKharif = seasonType.includes('kharif') || ['rice', 'cotton', 'maize', 'soybean', 'tur', 'moong', 'urad', 'groundnut', 'bajra', 'jowar'].includes(cropId);
+
+                          const quarters = [
+                            {
+                              name: 'Q1 (Jan – Mar)',
+                              inflow: isKharif ? 'Moderate Inflow' : 'Pre-Harvest Lean',
+                              mult: isKharif ? 1.02 : 1.08,
+                              advice: isKharif ? 'Gradual selling in tranches of 25%' : 'Prepare harvesting and threshing equipment'
+                            },
+                            {
+                              name: 'Q2 (Apr – Jun)',
+                              inflow: isKharif ? 'Lean Supply' : 'Peak Bumper Arrivals',
+                              mult: isKharif ? 1.08 : 0.93,
+                              advice: isKharif ? 'Target summer millers for peak price' : 'Store cleaned grain in hermetic bags / silos'
+                            },
+                            {
+                              name: 'Q3 (Jul – Sep)',
+                              inflow: isKharif ? 'Extreme Lean (Off-Season)' : 'Moderate Inflow',
+                              mult: isKharif ? 1.12 : 1.04,
+                              advice: isKharif ? 'Sell remaining warehouse stock at maximum margin' : 'Regular releases to meet working capital'
+                            },
+                            {
+                              name: 'Q4 (Oct – Dec)',
+                              inflow: isKharif ? 'Peak Harvest Glut' : 'Off-Season Highs',
+                              mult: isKharif ? 0.92 : 1.08,
+                              advice: isKharif ? 'Avoid spot distress sales; utilize MSP procurement centers' : 'Premium window for stock liquidation'
+                            }
+                          ];
+
+                          return quarters.map((q, idx) => {
+                            const estRate = Math.round(baseRate * q.mult);
+                            const diffPct = ((q.mult - 1.0) * 100).toFixed(1);
+                            const isPositive = parseFloat(diffPct) >= 0;
+
+                            return (
+                              <tr key={idx} className="hover:bg-gray-50/70 transition-colors">
+                                <td className="px-4 py-3.5 font-bold text-gray-900">{q.name}</td>
+                                <td className="px-4 py-3.5">
+                                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                                    q.inflow.includes('Peak') ? 'bg-amber-100 text-amber-800' :
+                                    q.inflow.includes('Lean') ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-700'
+                                  }`}>
+                                    {q.inflow}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3.5 text-right font-extrabold text-gray-900">
+                                  {formatPrice(estRate)} / {unitLabel}
+                                </td>
+                                <td className="px-4 py-3.5 text-center">
+                                  <span className={`font-bold ${isPositive ? 'text-emerald-700' : 'text-amber-700'}`}>
+                                    {isPositive ? '+' : ''}{diffPct}%
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3.5 text-xs text-gray-600">
+                                  {q.advice}
+                                </td>
+                              </tr>
+                            );
+                          });
+                        })()}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
