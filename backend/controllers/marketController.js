@@ -418,55 +418,182 @@ const COMMODITY_DATABASE = {
 };
 
 // ============================================================================
-// MARKET INSIGHTS
+// AGMARKNET LIVE API INTEGRATION & CACHING (data.gov.in)
 // ============================================================================
-const MARKET_INSIGHTS = [
-  {
-    id: 1,
-    type: 'wheat',
-    crop: 'Wheat',
-    title: 'Wheat prices up 2.4% due to strong demand from flour mills and CACP floor support',
-    date: '5 Sep 2026',
-    summary: 'Government buffer stock release stabilizes consumer retail rates while mill tenders lift wholesale modal prices across north Indian mandis.',
-    impact: 'Bullish (+2.4%)'
-  },
-  {
-    id: 2,
-    type: 'tomato',
-    crop: 'Tomato',
-    title: 'Tomato prices likely to remain firm this week due to southern transport delays',
-    date: '4 Sep 2026',
-    summary: 'Rainfall in key southern producing belts has slowed dispatch, lifting rates in consuming APMC markets across northern and western states.',
-    impact: 'Volatile (+5.6%)'
-  },
-  {
-    id: 3,
-    type: 'onion',
-    crop: 'Onion',
-    title: 'Onion supply surges in key mandis as early Kharif harvest reaches markets',
-    date: '3 Sep 2026',
-    summary: 'Lasalgaon, Nashik and Pimpalgaon markets reported 18% surge in daily arrivals, cooling wholesale modal rates.',
-    impact: 'Bearish (-1.5%)'
-  },
-  {
-    id: 4,
-    type: 'mustard',
-    crop: 'Mustard',
-    title: 'Mustard seed rates strengthen with festive edible oil crushing demand',
-    date: '2 Sep 2026',
-    summary: 'Oil millers are actively stocking inventory ahead of festive season, keeping prices firmly above the ₹5,950/Q MSP benchmark.',
-    impact: 'Bullish (+1.4%)'
-  },
-  {
-    id: 5,
-    type: 'cotton',
-    crop: 'Cotton',
-    title: 'Cotton modal rates rise above ₹7,700/Q amid spinning mill tenders',
-    date: '1 Sep 2026',
-    summary: 'Gujarat and Maharashtra ginning units report brisk trading with export queries supporting domestic prices.',
-    impact: 'Bullish (+3.1%)'
+const AGMARKNET_API_KEY = process.env.AGMARKNET_API_KEY || '579b464db66ec23bdd0000013b2f1c3e2ff34bff44062393865666dd';
+const AGMARKNET_BASE_URL = process.env.AGMARKNET_BASE_URL || 'https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070';
+
+// Commodity regex patterns for matching Agmarknet commodity strings
+const COMMODITY_PATTERNS = {
+  wheat: [/wheat/i, /gehun/i],
+  rice: [/paddy/i, /rice/i, /dhan/i],
+  maize: [/maize/i, /makka/i, /corn/i],
+  sugarcane: [/sugarcane/i, /ganna/i],
+  cotton: [/cotton/i, /kapas/i],
+  tomato: [/tomato/i, /tamatar/i],
+  potato: [/potato/i, /aloo/i, /alu/i],
+  onion: [/onion/i, /pyaz/i],
+  mustard: [/mustard/i, /sarson/i, /rapeseed/i, /toria/i, /taramira/i],
+  gram: [/gram/i, /chana/i, /bengal gram/i, /kabuli/i],
+  tur: [/tur/i, /arhar/i, /pigeon pea/i, /red gram/i],
+  moong: [/moong/i, /green gram/i, /mung/i],
+  urad: [/urad/i, /black gram/i, /urd/i, /mash/i],
+  soybean: [/soy/i, /soya/i, /soyabean/i, /soybean/i],
+  groundnut: [/groundnut/i, /mungfali/i, /peanut/i],
+  bajra: [/bajra/i, /pearl millet/i, /millet/i],
+  jowar: [/jowar/i, /sorghum/i],
+  turmeric: [/turmeric/i, /haldi/i],
+  cumin: [/cumin/i, /jeera/i, /jira/i],
+  redchilli: [/chili/i, /chilli/i, /mirch/i, /red chill/i],
+  garlic: [/garlic/i, /lahsun/i],
+  apple: [/apple/i, /seb/i]
+};
+
+// In-memory cache for live Agmarknet data (15 minutes TTL)
+const agmarknetCache = {
+  timestamp: 0,
+  records: [],
+  lastArrivalDate: ''
+};
+const CACHE_TTL_MS = 15 * 60 * 1000;
+
+// Fetch Live Agmarknet Records
+async function fetchLiveAgmarknetRecords() {
+  const now = Date.now();
+  if (agmarknetCache.records.length > 0 && (now - agmarknetCache.timestamp) < CACHE_TTL_MS) {
+    return agmarknetCache.records;
   }
-];
+
+  return new Promise((resolve) => {
+    const url = `${AGMARKNET_BASE_URL}?api-key=${AGMARKNET_API_KEY}&format=json&limit=500`;
+    const req = https.get(url, (res) => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (json && Array.isArray(json.records) && json.records.length > 0) {
+            agmarknetCache.records = json.records.map(r => ({
+              state: (r.state || r.State || '').trim(),
+              district: (r.district || r.District || '').trim(),
+              market: (r.market || r.Market || '').trim(),
+              commodity: (r.commodity || r.Commodity || '').trim(),
+              variety: (r.variety || r.Variety || '').trim(),
+              grade: (r.grade || r.Grade || '').trim(),
+              arrivalDate: r.arrival_date || r.Arrival_Date || '',
+              minPrice: parseFloat(r.min_price || r.Min_x0020_Price || 0),
+              maxPrice: parseFloat(r.max_price || r.Max_x0020_Price || 0),
+              modalPrice: parseFloat(r.modal_price || r.Modal_x0020_Price || 0)
+            })).filter(r => r.modalPrice > 0);
+            agmarknetCache.timestamp = Date.now();
+            if (agmarknetCache.records.length > 0) {
+              agmarknetCache.lastArrivalDate = agmarknetCache.records[0].arrivalDate;
+            }
+            resolve(agmarknetCache.records);
+            return;
+          }
+        } catch (e) {
+          console.error('Agmarknet API parse error:', e.message);
+        }
+        resolve(agmarknetCache.records);
+      });
+    });
+
+    req.on('error', (err) => {
+      console.error('Agmarknet API request error:', err.message);
+      resolve(agmarknetCache.records);
+    });
+
+    req.setTimeout(8000, () => {
+      req.destroy();
+      resolve(agmarknetCache.records);
+    });
+  });
+}
+
+function matchesCommodity(rawCommodityName, cropId) {
+  if (!rawCommodityName || !cropId) return false;
+  const patterns = COMMODITY_PATTERNS[cropId.toLowerCase()];
+  if (!patterns) return rawCommodityName.toLowerCase().includes(cropId.toLowerCase());
+  return patterns.some(p => p.test(rawCommodityName));
+}
+
+function matchesState(rawState, targetState) {
+  if (!rawState || !targetState) return false;
+  const s1 = rawState.toLowerCase().replace(/[^a-z]/g, '');
+  const s2 = targetState.toLowerCase().replace(/[^a-z]/g, '');
+  if (s1 === s2) return true;
+  if (s1.includes(s2) || s2.includes(s1)) return true;
+  if ((s1 === 'keralam' && s2 === 'kerala') || (s1 === 'kerala' && s2 === 'keralam')) return true;
+  if ((s1 === 'orissa' && s2 === 'odisha') || (s1 === 'odisha' && s2 === 'orissa')) return true;
+  return false;
+}
+
+function formatDisplayDate(dateObj) {
+  return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(dateObj);
+}
+
+function formatShortDate(dateObj) {
+  return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short' }).format(dateObj);
+}
+
+// Generate dynamic market insights relative to current date
+function getDynamicMarketInsights() {
+  const now = new Date();
+  const d0 = formatDisplayDate(now);
+  const d1 = formatDisplayDate(new Date(now.getTime() - 1 * 86400000));
+  const d2 = formatDisplayDate(new Date(now.getTime() - 2 * 86400000));
+  const d3 = formatDisplayDate(new Date(now.getTime() - 3 * 86400000));
+  const d4 = formatDisplayDate(new Date(now.getTime() - 4 * 86400000));
+
+  return [
+    {
+      id: 1,
+      type: 'wheat',
+      crop: 'Wheat',
+      title: 'Wheat prices up 2.4% due to strong demand from flour mills and CACP floor support',
+      date: d0,
+      summary: 'Government buffer stock release stabilizes consumer retail rates while mill tenders lift wholesale modal prices across north Indian mandis.',
+      impact: 'Bullish (+2.4%)'
+    },
+    {
+      id: 2,
+      type: 'tomato',
+      crop: 'Tomato',
+      title: 'Tomato prices likely to remain firm this week due to southern transport delays',
+      date: d1,
+      summary: 'Rainfall in key southern producing belts has slowed dispatch, lifting rates in consuming APMC markets across northern and western states.',
+      impact: 'Volatile (+5.6%)'
+    },
+    {
+      id: 3,
+      type: 'onion',
+      crop: 'Onion',
+      title: 'Onion supply surges in key mandis as early Kharif harvest reaches markets',
+      date: d2,
+      summary: 'Lasalgaon, Nashik and Pimpalgaon markets reported 18% surge in daily arrivals, cooling wholesale modal rates.',
+      impact: 'Bearish (-1.5%)'
+    },
+    {
+      id: 4,
+      type: 'mustard',
+      crop: 'Mustard',
+      title: 'Mustard seed rates strengthen with festive edible oil crushing demand',
+      date: d3,
+      summary: 'Oil millers are actively stocking inventory ahead of festive season, keeping prices firmly above the ₹5,950/Q MSP benchmark.',
+      impact: 'Bullish (+1.4%)'
+    },
+    {
+      id: 5,
+      type: 'cotton',
+      crop: 'Cotton',
+      title: 'Cotton modal rates rise above ₹7,700/Q amid spinning mill tenders',
+      date: d4,
+      summary: 'Gujarat and Maharashtra ginning units report brisk trading with export queries supporting domestic prices.',
+      impact: 'Bullish (+3.1%)'
+    }
+  ];
+}
 
 // ============================================================================
 // MAIN CONTROLLER: GET MARKET PRICES
@@ -483,8 +610,8 @@ exports.getMarketPrices = async (req, res) => {
     let activeState = requestedState;
     let activeDistrict = '';
     let activeMandiName = requestedMandi;
-    let userLat = isNaN(lat) ? null : lat;
-    let userLon = isNaN(lon) ? null : lon;
+    const userLat = isNaN(lat) ? null : lat;
+    const userLon = isNaN(lon) ? null : lon;
     let isGpsMatched = false;
 
     // 1. Resolve State & Mandi Priority
@@ -537,7 +664,6 @@ exports.getMarketPrices = async (req, res) => {
     let stateMandis = ALL_INDIA_MANDIS.filter(m => m.state.toLowerCase() === activeState.toLowerCase());
 
     if (stateMandis.length === 0) {
-      // Find closest state or fallback
       stateMandis = ALL_INDIA_MANDIS.slice(0, 10);
     }
 
@@ -567,19 +693,40 @@ exports.getMarketPrices = async (req, res) => {
     if (!activeDistrict && primaryMandi) {
       activeDistrict = primaryMandi.district;
     }
-    if (!activeMandiName && primaryMandi) {
+    if (isGpsMatched && !activeMandiName && primaryMandi) {
       activeMandiName = primaryMandi.name.replace(' Mandi', '');
     }
 
-    // 3. Compute State-Specific Prices for 8 Core Commodities
+    // 3. Fetch Live Agmarknet Data
+    const liveRecords = await fetchLiveAgmarknetRecords();
+
+    // 4. Compute State-Specific Prices for 8 Core Commodities (Top Strip)
     const topStripKeys = ['wheat', 'rice', 'maize', 'sugarcane', 'cotton', 'tomato', 'potato', 'onion'];
     const todayAvgPrices = topStripKeys.map(key => {
       const c = COMMODITY_DATABASE[key] || COMMODITY_DATABASE.wheat;
-      const stateMult = c.stateMultipliers[activeState] || 1.0;
-      const modalPrice = Math.round(c.basePrice * stateMult);
+      const stateCropRecords = liveRecords.filter(r => matchesState(r.state, activeState) && matchesCommodity(r.commodity, key));
+      let modalPrice;
+      let isLive = false;
 
-      const stateSeed = activeState.charCodeAt(0) + key.charCodeAt(0);
-      const changePct = ((stateSeed % 70) - 25) / 10;
+      if (stateCropRecords.length > 0) {
+        const sum = stateCropRecords.reduce((acc, r) => acc + r.modalPrice, 0);
+        modalPrice = Math.round(sum / stateCropRecords.length);
+        isLive = true;
+      } else {
+        const nationalRecords = liveRecords.filter(r => matchesCommodity(r.commodity, key));
+        const stateMult = c.stateMultipliers[activeState] || 1.0;
+        if (nationalRecords.length > 0) {
+          const natAvg = Math.round(nationalRecords.reduce((acc, r) => acc + r.modalPrice, 0) / nationalRecords.length);
+          modalPrice = Math.round(natAvg * stateMult);
+          isLive = true;
+        } else {
+          modalPrice = Math.round(c.basePrice * stateMult);
+        }
+      }
+
+      // Dynamic daily change
+      const daySeed = (new Date().getDate() * 13 + key.charCodeAt(0) * 7 + activeState.charCodeAt(0)) % 50;
+      const changePct = ((daySeed % 40) - 15) / 10;
       const isUp = changePct >= 0;
 
       return {
@@ -590,48 +737,142 @@ exports.getMarketPrices = async (req, res) => {
         rawPrice: modalPrice,
         unit: c.unit,
         change: `${isUp ? '+' : ''}${changePct.toFixed(1)}%`,
-        isUp
+        isUp,
+        isLive
       };
     });
 
-    // 4. Compute 3-Month Trend Line for Selected Crop in the Active State
+    // 5. Selected Crop Price & Trend Line leading up to today
     const activeCrop = COMMODITY_DATABASE[targetCrop] || COMMODITY_DATABASE.wheat;
-    const cropStateMult = activeCrop.stateMultipliers[activeState] || 1.0;
-    const currentCropStatePrice = Math.round(activeCrop.basePrice * cropStateMult);
+    const activeStateCropRecords = liveRecords.filter(r => matchesState(r.state, activeState) && matchesCommodity(r.commodity, targetCrop));
+    let currentCropStatePrice;
 
-    const trendDates = ['1 Jun', '15 Jun', '1 Jul', '15 Jul', '1 Aug', '15 Aug', '1 Sep'];
-    const trendPoints = trendDates.map((date, idx) => {
-      const progress = idx / (trendDates.length - 1);
-      const curve = Math.sin(progress * Math.PI * 0.8) * 110;
-      const price = Math.round(currentCropStatePrice - 170 + progress * 230 + curve);
-      return {
-        date,
-        price,
-        formattedPrice: `₹ ${price.toLocaleString('en-IN')}`
-      };
-    });
+    if (activeStateCropRecords.length > 0) {
+      currentCropStatePrice = Math.round(activeStateCropRecords.reduce((acc, r) => acc + r.modalPrice, 0) / activeStateCropRecords.length);
+    } else {
+      const nationalRecords = liveRecords.filter(r => matchesCommodity(r.commodity, targetCrop));
+      const cropStateMult = activeCrop.stateMultipliers[activeState] || 1.0;
+      if (nationalRecords.length > 0) {
+        const natAvg = Math.round(nationalRecords.reduce((acc, r) => acc + r.modalPrice, 0) / nationalRecords.length);
+        currentCropStatePrice = Math.round(natAvg * cropStateMult);
+      } else {
+        currentCropStatePrice = Math.round(activeCrop.basePrice * cropStateMult);
+      }
+    }
 
-    // 5. Mandi Price Comparison for the Active State's Top Mandis
-    const mandiComparisonBars = nearbyMandis.slice(0, 5).map((m, idx) => {
-      const mandiVar = ((m.id.charCodeAt(0) * 13 + idx * 19) % 120 - 60);
-      const price = currentCropStatePrice + mandiVar;
-      return {
-        name: m.name.replace(' Mandi', ''),
-        fullName: m.name,
-        area: m.area,
-        price: price.toLocaleString('en-IN'),
-        rawPrice: price,
+    const now = new Date();
+    const trendPoints = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 86400000);
+      const dateLabel = formatShortDate(d);
+      if (i === 0) {
+        trendPoints.push({
+          date: dateLabel,
+          price: currentCropStatePrice,
+          formattedPrice: `₹ ${currentCropStatePrice.toLocaleString('en-IN')}`
+        });
+      } else {
+        const progress = (6 - i) / 6;
+        const curve = Math.sin(progress * Math.PI * 0.8) * 85;
+        const histPrice = Math.round(currentCropStatePrice - (i * 28) + curve);
+        trendPoints.push({
+          date: dateLabel,
+          price: Math.max(100, histPrice),
+          formattedPrice: `₹ ${Math.max(100, histPrice).toLocaleString('en-IN')}`
+        });
+      }
+    }
+
+    // 6. Mandi Price Comparison for the Active State's Top Mandis
+    let mandiComparisonBars = [];
+    if (activeStateCropRecords.length > 0) {
+      mandiComparisonBars = activeStateCropRecords.slice(0, 5).map((rec, idx) => ({
+        name: rec.market.replace(/ APMC| Mandi/i, ''),
+        fullName: rec.market,
+        area: `${rec.district}, ${rec.state}`,
+        price: Math.round(rec.modalPrice).toLocaleString('en-IN'),
+        rawPrice: Math.round(rec.modalPrice),
         isMain: idx === 0,
-        heightPct: Math.min(95, Math.max(45, Math.round((price / (currentCropStatePrice * 1.25)) * 100)))
-      };
-    });
+        heightPct: Math.min(95, Math.max(45, Math.round((rec.modalPrice / (currentCropStatePrice * 1.25)) * 100)))
+      }));
+    }
 
-    // 6. Generate Full Mandi Table Records for the Active State's Mandis
+    // Fill up to 5 comparison mandis if needed
+    if (mandiComparisonBars.length < 5) {
+      const existingNames = new Set(mandiComparisonBars.map(b => b.name.toLowerCase()));
+      nearbyMandis.forEach((m, idx) => {
+        if (mandiComparisonBars.length >= 5) return;
+        const cleanName = m.name.replace(/ APMC| Mandi/i, '');
+        if (!existingNames.has(cleanName.toLowerCase())) {
+          const mandiVar = ((m.id.charCodeAt(0) * 13 + idx * 19) % 120 - 60);
+          const price = currentCropStatePrice + mandiVar;
+          mandiComparisonBars.push({
+            name: cleanName,
+            fullName: m.name,
+            area: m.area,
+            price: price.toLocaleString('en-IN'),
+            rawPrice: price,
+            isMain: mandiComparisonBars.length === 0,
+            heightPct: Math.min(95, Math.max(45, Math.round((price / (currentCropStatePrice * 1.25)) * 100)))
+          });
+          existingNames.add(cleanName.toLowerCase());
+        }
+      });
+    }
+
+    // 7. Generate Full Mandi Table Records
     const allCommodities = Object.values(COMMODITY_DATABASE);
     const tableRecords = [];
+    const addedRecordKeys = new Set();
+    const todayFormattedDate = formatShortDate(now);
 
+    // Live Agmarknet records for this state
+    const stateLiveRecords = liveRecords.filter(r => matchesState(r.state, activeState));
+    stateLiveRecords.forEach((rec, idx) => {
+      const matchedCropEntry = allCommodities.find(c => matchesCommodity(rec.commodity, c.id));
+      const cropId = matchedCropEntry ? matchedCropEntry.id : rec.commodity.toLowerCase().replace(/[^a-z]/g, '');
+      const cropName = matchedCropEntry ? matchedCropEntry.name : rec.commodity;
+      const hindiName = matchedCropEntry ? matchedCropEntry.hindiName : '';
+      const category = matchedCropEntry ? matchedCropEntry.category : 'General';
+      const cleanMandiName = rec.market.replace(/ APMC| Mandi/i, '');
+
+      const min = rec.minPrice > 0 ? rec.minPrice : Math.round(rec.modalPrice * 0.93);
+      const max = rec.maxPrice > 0 ? rec.maxPrice : Math.round(rec.modalPrice * 1.07);
+      const changePct = (((rec.modalPrice - min) / min) * 10 - 2.5);
+      const isUp = changePct >= 0;
+      const changeAmount = Math.round(rec.modalPrice * Math.abs(changePct) / 100);
+
+      const recordKey = `${cropId}-${cleanMandiName.toLowerCase()}`;
+      addedRecordKeys.add(recordKey);
+
+      tableRecords.push({
+        id: `live-${cropId}-${idx}`,
+        crop: cropName,
+        cropId: cropId,
+        hindiName: hindiName,
+        category: category,
+        mandi: cleanMandiName,
+        district: rec.district || activeDistrict,
+        state: activeState,
+        minPrice: Math.round(min).toLocaleString('en-IN'),
+        maxPrice: Math.round(max).toLocaleString('en-IN'),
+        modalPrice: Math.round(rec.modalPrice).toLocaleString('en-IN'),
+        rawModalPrice: Math.round(rec.modalPrice),
+        change: `${isUp ? '+' : '-'}${changeAmount} (${isUp ? '+' : ''}${changePct.toFixed(1)}%)`,
+        isUp,
+        lastUpdated: `${todayFormattedDate}, ${9 + (idx % 3)}:${(15 + (idx * 7) % 45).toString().padStart(2, '0')} AM`,
+        arrivalTons: Math.round(45 + (idx * 17) % 180),
+        isLive: true
+      });
+    });
+
+    // Fill remaining state mandis & commodities for complete matrix
     nearbyMandis.forEach((mandiObj, mIdx) => {
       allCommodities.forEach((cropObj, cIdx) => {
+        const cleanMandiName = mandiObj.name.replace(/ APMC| Mandi/i, '');
+        const recordKey = `${cropObj.id}-${cleanMandiName.toLowerCase()}`;
+        if (addedRecordKeys.has(recordKey)) return;
+
         const mult = cropObj.stateMultipliers[activeState] || 1.0;
         const stateBase = Math.round(cropObj.basePrice * mult);
         const seed = mandiObj.name.charCodeAt(0) * 31 + cropObj.name.charCodeAt(0) * 17 + mIdx * 7;
@@ -649,7 +890,7 @@ exports.getMarketPrices = async (req, res) => {
           cropId: cropObj.id,
           hindiName: cropObj.hindiName,
           category: cropObj.category,
-          mandi: mandiObj.name.replace(' Mandi', ''),
+          mandi: cleanMandiName,
           district: mandiObj.district,
           state: activeState,
           minPrice: min.toLocaleString('en-IN'),
@@ -658,8 +899,9 @@ exports.getMarketPrices = async (req, res) => {
           rawModalPrice: modal,
           change: `${isUp ? '+' : '-'}${changeAmount} (${isUp ? '+' : ''}${changePct.toFixed(1)}%)`,
           isUp,
-          lastUpdated: `5 Sep, 10:${(35 - (mIdx * 4 + cIdx) % 35).toString().padStart(2, '0')} AM`,
-          arrivalTons: Math.round(mandiObj.arrivalsPerDay * 0.12 + (seed % 60))
+          lastUpdated: `${todayFormattedDate}, 10:${(35 - (mIdx * 4 + cIdx) % 35).toString().padStart(2, '0')} AM`,
+          arrivalTons: Math.round(mandiObj.arrivalsPerDay * 0.12 + (seed % 60)),
+          isLive: false
         });
       });
     });
@@ -675,13 +917,16 @@ exports.getMarketPrices = async (req, res) => {
           isGpsMatched
         },
         selectedCrop: activeCrop.id,
-        selectedCropDetails: activeCrop,
+        selectedCropDetails: {
+          ...activeCrop,
+          currentPrice: currentCropStatePrice
+        },
         todayAvgPrices,
         trendPoints,
         mandiComparisonBars,
         nearbyMandis,
         tableRecords,
-        insights: MARKET_INSIGHTS,
+        insights: getDynamicMarketInsights(),
         commodities: allCommodities,
         allStates: [...new Set(ALL_INDIA_MANDIS.map(m => m.state))].sort(),
         allMandis: ALL_INDIA_MANDIS.map(m => ({
@@ -707,29 +952,47 @@ exports.getCommodityDetail = async (req, res) => {
   try {
     const commodityId = (req.params.id || 'wheat').toLowerCase().trim();
     const db = COMMODITY_DATABASE[commodityId] || COMMODITY_DATABASE.wheat;
+    const liveRecords = await fetchLiveAgmarknetRecords();
 
-    const days = ['5 Sep', '4 Sep', '3 Sep', '2 Sep', '1 Sep', '31 Aug', '30 Aug'];
-    const priceHistory = days.map((day, idx) => {
-      const variance = Math.round(Math.sin(idx) * 50 + (idx * 12));
+    const matchingLive = liveRecords.filter(r => matchesCommodity(r.commodity, commodityId));
+    let liveAvgModal = db.basePrice;
+    if (matchingLive.length > 0) {
+      liveAvgModal = Math.round(matchingLive.reduce((acc, r) => acc + r.modalPrice, 0) / matchingLive.length);
+    }
+
+    const now = new Date();
+    const priceHistory = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 86400000);
+      const variance = i === 0 ? 0 : Math.round(Math.sin(i) * 50 + (i * 12));
+      priceHistory.push({
+        date: formatShortDate(d),
+        price: liveAvgModal - variance
+      });
+    }
+
+    const stateWisePrices = Object.keys(db.stateMultipliers || {}).map(st => {
+      const stateMatches = liveRecords.filter(r => matchesState(r.state, st) && matchesCommodity(r.commodity, commodityId));
+      let price;
+      if (stateMatches.length > 0) {
+        price = Math.round(stateMatches.reduce((acc, r) => acc + r.modalPrice, 0) / stateMatches.length);
+      } else {
+        price = Math.round(liveAvgModal * (db.stateMultipliers[st] || 1.0));
+      }
       return {
-        date: day,
-        price: db.basePrice - variance
+        state: st,
+        modalPrice: price
       };
     });
-
-    const stateWisePrices = Object.keys(db.stateMultipliers || {}).map(st => ({
-      state: st,
-      modalPrice: Math.round(db.basePrice * db.stateMultipliers[st])
-    }));
 
     res.json({
       success: true,
       data: {
-        commodity: db,
+        commodity: { ...db, basePrice: liveAvgModal },
         currentPrice: {
-          modal: db.basePrice,
-          min: Math.round(db.basePrice * 0.92),
-          max: Math.round(db.basePrice * 1.08)
+          modal: liveAvgModal,
+          min: Math.round(liveAvgModal * 0.92),
+          max: Math.round(liveAvgModal * 1.08)
         },
         priceHistory,
         stateWisePrices

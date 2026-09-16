@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import farmBgLocal from '../assets/farm_bg.jpg';
 import cta_plant from '../assets/cta_plant.png';
@@ -343,6 +343,16 @@ function CropIllustration({ type, className = "w-12 h-12" }) {
   }
 }
 
+function getFormattedDateLabels() {
+  const now = new Date();
+  return {
+    today: new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(now),
+    yesterday: new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(now.getTime() - 86400000)),
+    weekStart: new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short' }).format(new Date(now.getTime() - 7 * 86400000)),
+    weekEnd: new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short' }).format(now)
+  };
+}
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -352,7 +362,11 @@ export default function MarketPrices() {
   const [selectedState, setSelectedState] = useState('Uttar Pradesh');
   const [selectedMandi, setSelectedMandi] = useState('');
   const [unitMode, setUnitMode] = useState('quintal'); // 'quintal' | 'kg' | 'ton'
-  const [selectedDate, setSelectedDate] = useState('Today (16 Sep 2026)');
+  const [selectedDate, setSelectedDate] = useState('today');
+
+  // Dynamic Date Labels
+  const [dateLabels] = useState(getFormattedDateLabels);
+  const { today: todayLabel, yesterday: yesterdayLabel, weekStart: weekStartLabel, weekEnd: weekEndLabel } = dateLabels;
 
   // Dynamic Data Containers from Backend
   const [locationName, setLocationName] = useState('Detecting location...');
@@ -404,9 +418,11 @@ export default function MarketPrices() {
   // 1. DYNAMIC DATA FETCHER
   const fetchMarketDashboardData = useCallback(async (opts = {}) => {
     try {
+      setLoading(true);
       const queryParams = new URLSearchParams();
       const effectiveState = opts.state !== undefined ? opts.state : (opts.isGps ? '' : selectedState);
       const effectiveCrop = opts.crop !== undefined ? opts.crop : selectedCrop;
+      const effectiveMandi = opts.mandi !== undefined ? opts.mandi : (opts.state !== undefined ? '' : selectedMandi);
 
       if (opts.lat && opts.lon && !opts.state && !opts.location) {
         queryParams.append('lat', opts.lat);
@@ -418,8 +434,8 @@ export default function MarketPrices() {
       if (effectiveState) {
         queryParams.append('state', effectiveState);
       }
-      if (opts.mandi) {
-        queryParams.append('mandi', opts.mandi);
+      if (effectiveMandi) {
+        queryParams.append('mandi', effectiveMandi);
       }
       if (effectiveCrop) {
         queryParams.append('crop', effectiveCrop);
@@ -433,9 +449,15 @@ export default function MarketPrices() {
         if (d.location?.fullLocation) {
           setLocationName(d.location.fullLocation);
           if (d.location.state) setSelectedState(d.location.state);
-          if (d.location.mandiName) {
+          if (opts.mandi !== undefined) {
+            setSelectedMandi(opts.mandi);
+            setFilterMandi(opts.mandi);
+          } else if (d.location.isGpsMatched && d.location.mandiName) {
             setSelectedMandi(d.location.mandiName);
             setFilterMandi(d.location.mandiName);
+          } else if (opts.state !== undefined) {
+            setSelectedMandi('');
+            setFilterMandi('');
           }
         }
         setIsGpsActive(Boolean(d.location?.isGpsMatched || (opts.lat && opts.lon)));
@@ -456,9 +478,11 @@ export default function MarketPrices() {
       setLoading(false);
       setLocDetecting(false);
     }
-  }, [selectedCrop, selectedState]);
+  }, [selectedCrop, selectedMandi, selectedState]);
 
   // 2. AUTOMATIC USER GEOLOCATION ON MOUNT & MANUAL TRIGGER
+  const initialGpsRan = useRef(false);
+
   const detectUserGPS = useCallback(() => {
     setLocDetecting(true);
     if (navigator.geolocation) {
@@ -495,8 +519,10 @@ export default function MarketPrices() {
   }, [fetchMarketDashboardData, selectedCrop]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    detectUserGPS();
+    if (!initialGpsRan.current) {
+      initialGpsRan.current = true;
+      detectUserGPS();
+    }
   }, [detectUserGPS]);
 
   // When crop changes
@@ -953,7 +979,7 @@ export default function MarketPrices() {
                       <span className="text-xs font-extrabold text-[#123C26] block">
                         {formatPrice(trendPoints[trendPoints.length - 1]?.price || 2125)}
                       </span>
-                      <span className="text-[10px] text-emerald-700 block font-medium">16 Sep 2026</span>
+                      <span className="text-[10px] text-emerald-700 block font-medium">{todayLabel}</span>
                     </div>
                   </div>
 
@@ -1235,9 +1261,9 @@ export default function MarketPrices() {
                         onChange={(e) => setSelectedDate(e.target.value)}
                         className="appearance-none bg-white border border-gray-200 rounded-xl pl-8 pr-7 py-2 text-xs font-semibold text-gray-700 cursor-pointer focus:outline-none"
                       >
-                        <option>Today (16 Sep 2026)</option>
-                        <option>Yesterday (15 Sep 2026)</option>
-                        <option>Weekly Avg (9 Sep - 16 Sep)</option>
+                        <option value="today">Today ({todayLabel})</option>
+                        <option value="yesterday">Yesterday ({yesterdayLabel})</option>
+                        <option value="weekly">Weekly Avg ({weekStartLabel} - {weekEndLabel})</option>
                       </select>
                       <CalendarIcon className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       <ChevronDownIcon className="w-3 h-3 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
