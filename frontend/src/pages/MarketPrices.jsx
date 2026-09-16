@@ -667,6 +667,86 @@ export default function MarketPrices() {
     return result;
   }, [allTableRecords, searchQuery, filterCrop, filterDistrict, filterMandi, sortField, sortDirection, selectedDate, todayLabel, yesterdayLabel, weekStartLabel, weekEndLabel]);
 
+  // 4. DYNAMIC TREND CHART DATA
+  const trendChartData = useMemo(() => {
+    if (!trendPoints || trendPoints.length === 0) {
+      return { pathD: '', areaD: '', points: [], yTicks: [] };
+    }
+
+    const prices = trendPoints.map(p => p.price);
+    const minVal = Math.min(...prices);
+    const maxVal = Math.max(...prices);
+    const range = (maxVal - minVal) || (maxVal * 0.1) || 100;
+    const padding = range * 0.18;
+    const yMin = Math.max(0, Math.floor((minVal - padding) / 50) * 50);
+    const yMax = Math.ceil((maxVal + padding) / 50) * 50;
+    const yRange = (yMax - yMin) || 100;
+
+    // 5 dynamic Y-ticks
+    const step = yRange / 4;
+    const yTicks = [yMax, yMax - step, yMax - 2 * step, yMax - 3 * step, yMin];
+
+    const plotLeft = 55;
+    const plotRight = 385;
+    const plotTop = 30;
+    const plotBottom = 170;
+    const plotW = plotRight - plotLeft;
+    const plotH = plotBottom - plotTop;
+
+    const coords = trendPoints.map((pt, i) => {
+      const x = plotLeft + (i / (trendPoints.length - 1 || 1)) * plotW;
+      const normalizedPrice = Math.min(1, Math.max(0, (pt.price - yMin) / yRange));
+      const y = plotBottom - normalizedPrice * plotH;
+      return { ...pt, cx: x, cy: y };
+    });
+
+    // Build smooth cubic bezier curve
+    let linePath = `M ${coords[0].cx.toFixed(1)} ${coords[0].cy.toFixed(1)}`;
+    for (let i = 0; i < coords.length - 1; i++) {
+      const p0 = coords[i === 0 ? 0 : i - 1];
+      const p1 = coords[i];
+      const p2 = coords[i + 1];
+      const p3 = coords[i + 2] || p2;
+
+      const cp1x = p1.cx + (p2.cx - p0.cx) / 6;
+      const cp1y = p1.cy + (p2.cy - p0.cy) / 6;
+      const cp2x = p2.cx - (p3.cx - p1.cx) / 6;
+      const cp2y = p2.cy - (p3.cy - p1.cy) / 6;
+
+      linePath += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.cx.toFixed(1)} ${p2.cy.toFixed(1)}`;
+    }
+
+    const areaPath = `${linePath} L ${coords[coords.length - 1].cx.toFixed(1)} ${plotBottom} L ${coords[0].cx.toFixed(1)} ${plotBottom} Z`;
+
+    return {
+      pathD: linePath,
+      areaD: areaPath,
+      points: coords,
+      yTicks
+    };
+  }, [trendPoints]);
+
+  // 5. DYNAMIC MANDI COMPARISON DATA
+  const mandiComparisonData = useMemo(() => {
+    if (!mandiComparisonBars || mandiComparisonBars.length === 0) {
+      return { bars: [], yTicks: [] };
+    }
+    const maxVal = Math.max(...mandiComparisonBars.map(b => b.rawPrice), 100);
+    const yMax = Math.ceil((maxVal * 1.15) / 100) * 100;
+    const step = yMax / 5;
+    const yTicks = [yMax, Math.round(yMax - step), Math.round(yMax - 2 * step), Math.round(yMax - 3 * step), Math.round(yMax - 4 * step), 0];
+
+    const bars = mandiComparisonBars.map(b => {
+      const heightPct = Math.min(95, Math.max(12, Math.round((b.rawPrice / yMax) * 100)));
+      return {
+        ...b,
+        heightPct
+      };
+    });
+
+    return { bars, yTicks };
+  }, [mandiComparisonBars]);
+
   // Paginated Slices
   const totalRecords = filteredAndSortedRecords.length;
   const totalPages = Math.ceil(totalRecords / rowsPerPage) || 1;
@@ -1002,7 +1082,7 @@ export default function MarketPrices() {
                       <h3 className="text-base font-bold text-gray-900 capitalize">
                         {selectedCropDetails?.name || selectedCrop} Price Trend
                       </h3>
-                      <p className="text-xs text-gray-500">Last 3 Months &middot; {selectedState}</p>
+                      <p className="text-xs text-gray-500">Past 7 Days &middot; {selectedState}</p>
                     </div>
 
                     <div className="bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl text-right">
@@ -1029,40 +1109,39 @@ export default function MarketPrices() {
                       ))}
 
                       {/* Area Fill */}
-                      <path
-                        d="M 55 160 Q 105 150 155 135 T 255 110 T 345 80 T 385 55 L 385 170 L 55 170 Z"
-                        fill="url(#dynamicGreenGrad)"
-                      />
+                      {trendChartData.areaD && (
+                        <path
+                          d={trendChartData.areaD}
+                          fill="url(#dynamicGreenGrad)"
+                        />
+                      )}
 
                       {/* Smooth Line */}
-                      <path
-                        d="M 55 160 Q 105 150 155 135 T 255 110 T 345 80 T 385 55"
-                        fill="none"
-                        stroke="#2C8C44"
-                        strokeWidth="3.5"
-                        strokeLinecap="round"
-                      />
+                      {trendChartData.pathD && (
+                        <path
+                          d={trendChartData.pathD}
+                          fill="none"
+                          stroke="#2C8C44"
+                          strokeWidth="3.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      )}
 
                       {/* Interactive Nodes */}
-                      {trendPoints.map((pt, i) => {
-                        const cx = 55 + i * 55;
-                        const cy = 160 - (i * 17.5);
-                        return (
-                          <g key={i} className="cursor-pointer" onMouseEnter={() => setActiveHoverPoint(pt)} onMouseLeave={() => setActiveHoverPoint(null)}>
-                            <circle cx={cx} cy={cy} r="6" fill="#FFFFFF" stroke="#2C8C44" strokeWidth="2.5" />
-                            <circle cx={cx} cy={cy} r="3" fill="#2C8C44" />
-                          </g>
-                        );
-                      })}
+                      {trendChartData.points.map((pt, i) => (
+                        <g key={i} className="cursor-pointer" onMouseEnter={() => setActiveHoverPoint(pt)} onMouseLeave={() => setActiveHoverPoint(null)}>
+                          <circle cx={pt.cx} cy={pt.cy} r="6" fill="#FFFFFF" stroke="#2C8C44" strokeWidth="2.5" />
+                          <circle cx={pt.cx} cy={pt.cy} r="3" fill="#2C8C44" />
+                        </g>
+                      ))}
                     </svg>
 
-                    {/* Y-Axis Labels */}
+                    {/* Dynamic Y-Axis Labels */}
                     <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[10px] text-gray-400 font-medium">
-                      <span>{formatPrice(2400)}</span>
-                      <span>{formatPrice(2200)}</span>
-                      <span>{formatPrice(2000)}</span>
-                      <span>{formatPrice(1800)}</span>
-                      <span>{formatPrice(1600)}</span>
+                      {trendChartData.yTicks.map((val, idx) => (
+                        <span key={idx}>{formatPrice(val)}</span>
+                      ))}
                     </div>
 
                     {/* X-Axis Labels */}
@@ -1072,7 +1151,7 @@ export default function MarketPrices() {
 
                     {/* Floating Tooltip */}
                     {activeHoverPoint && (
-                      <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg">
+                      <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg pointer-events-none z-20">
                         <strong>{activeHoverPoint.date}:</strong> {formatPrice(activeHoverPoint.price)} / {unitLabel}
                       </div>
                     )}
@@ -1089,16 +1168,14 @@ export default function MarketPrices() {
                   </div>
 
                   <div className="relative h-56 w-full flex items-end justify-between pl-10 pr-4 pb-8 pt-4">
+                    {/* Dynamic Y-Axis Labels */}
                     <div className="absolute left-0 top-0 bottom-8 flex flex-col justify-between text-[10px] text-gray-400 font-medium">
-                      <span>{formatPrice(2500)}</span>
-                      <span>{formatPrice(2000)}</span>
-                      <span>{formatPrice(1500)}</span>
-                      <span>{formatPrice(1000)}</span>
-                      <span>{formatPrice(500)}</span>
-                      <span>0</span>
+                      {mandiComparisonData.yTicks.map((val, idx) => (
+                        <span key={idx}>{formatPrice(val)}</span>
+                      ))}
                     </div>
 
-                    {mandiComparisonBars.map((bar, idx) => (
+                    {mandiComparisonData.bars.map((bar, idx) => (
                       <div
                         key={idx}
                         onClick={() => setFilterMandi(bar.name)}
@@ -1232,20 +1309,26 @@ export default function MarketPrices() {
                 </div>
 
                 <div className="grid grid-cols-12 gap-1.5 h-40 items-end mb-4">
-                  {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((mon, idx) => {
-                    const isPeak = idx >= 2 && idx <= 4;
-                    return (
-                      <div key={mon} className="flex flex-col items-center gap-1 flex-1">
-                        <div
-                          className={`w-full rounded-t transition-all ${
-                            isPeak ? 'bg-amber-400' : 'bg-[#2C8C44]'
-                          }`}
-                          style={{ height: `${35 + ((idx * 13 + 7) % 55)}%` }}
-                        />
-                        <span className="text-[10px] text-gray-600 font-bold">{mon}</span>
-                      </div>
-                    );
-                  })}
+                  {(() => {
+                    const seasonType = (selectedCropDetails?.season || '').toLowerCase();
+                    const isKharif = seasonType.includes('kharif');
+                    const isRabi = seasonType.includes('rabi');
+                    return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((mon, idx) => {
+                      const isHarvest = isKharif ? (idx >= 9 && idx <= 11) : isRabi ? (idx >= 2 && idx <= 4) : (idx >= 4 && idx <= 6);
+                      const baseSeasonalHeight = isHarvest ? 38 + ((idx % 3) * 6) : 72 + ((idx * 7) % 22);
+                      return (
+                        <div key={mon} className="flex flex-col items-center gap-1 flex-1">
+                          <div
+                            className={`w-full rounded-t transition-all ${
+                              isHarvest ? 'bg-amber-400' : 'bg-[#2C8C44]'
+                            }`}
+                            style={{ height: `${baseSeasonalHeight}%` }}
+                          />
+                          <span className="text-[10px] text-gray-600 font-bold">{mon}</span>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
 
                 <div className="flex items-center gap-6 text-xs text-gray-600">
@@ -2006,13 +2089,22 @@ export default function MarketPrices() {
                   <div className="mb-5">
                     <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">7-Day Modal Price History</h4>
                     <div className="grid grid-cols-7 gap-1.5 h-28 items-end bg-gray-50 p-3 rounded-xl border border-gray-200">
-                      {commodityDetail.priceHistory.map((d, i) => (
-                        <div key={i} className="flex flex-col items-center gap-1 flex-1">
-                          <span className="text-[9px] font-bold text-gray-700">₹{d.price}</span>
-                          <div className="w-full bg-[#2C8C44] rounded-t" style={{ height: `${60 + i * 4}%` }} />
-                          <span className="text-[9px] text-gray-400">{d.date}</span>
-                        </div>
-                      ))}
+                      {(() => {
+                        const historyPrices = commodityDetail.priceHistory.map(p => p.price);
+                        const maxH = Math.max(...historyPrices, 1);
+                        const minH = Math.min(...historyPrices, 0);
+                        const rangeH = (maxH - minH) || (maxH * 0.1) || 1;
+                        return commodityDetail.priceHistory.map((d, i) => {
+                          const heightPct = Math.min(95, Math.max(25, Math.round(((d.price - minH) / rangeH) * 65 + 30)));
+                          return (
+                            <div key={i} className="flex flex-col items-center gap-1 flex-1">
+                              <span className="text-[9px] font-bold text-gray-700">{formatPrice(d.price)}</span>
+                              <div className="w-full bg-[#2C8C44] rounded-t" style={{ height: `${heightPct}%` }} />
+                              <span className="text-[9px] text-gray-400">{d.date}</span>
+                            </div>
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
                 )}
