@@ -15,6 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
   test-and-build:
     name: Test & Build
     runs-on: ubuntu-latest
@@ -48,52 +49,127 @@ jobs:
         working-directory: frontend
         run: npm run build
 
+
   deploy:
     name: Deploy to Production
     needs: test-and-build
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Deploy through SSH
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
+          passphrase: ${{ secrets.PROD_SSH_PASSPHRASE }}
           port: ${{ secrets.PROD_SSH_PORT }}
-          script_stop: true
 
           script: |
             set -e
 
-            echo "Starting deployment..."
+            echo "======================================"
+            echo "KM PRODUCTION DEPLOYMENT"
+            echo "======================================"
 
-            cd /var/www/km-web
+            echo "Connected as:"
+            whoami
+
+            echo "Server:"
+            hostname
+
+
+            # -----------------------------------------------
+            # PROJECT DIRECTORY
+            # -----------------------------------------------
+
+            cd "${{ secrets.PROD_PATH }}"
+
+            echo "Project path:"
+            pwd
+
+
+            # -----------------------------------------------
+            # GET LATEST CODE
+            # -----------------------------------------------
 
             echo "Fetching latest code..."
+
             git fetch origin main
             git reset --hard origin/main
 
+            echo "Current commit:"
+            git log -1 --oneline
+
+
+            # -----------------------------------------------
+            # BACKEND
+            # -----------------------------------------------
+
             echo "Installing backend dependencies..."
+
             cd backend
-            npm ci
+
+            npm ci --omit=dev
+
+
+            # -----------------------------------------------
+            # FRONTEND
+            # -----------------------------------------------
 
             echo "Installing frontend dependencies..."
+
             cd ../frontend
+
             npm ci
 
             echo "Building frontend..."
+
             npm run build
 
-            echo "Restarting application..."
+
+            # -----------------------------------------------
+            # PUBLISH FRONTEND
+            # -----------------------------------------------
+
+            echo "Publishing frontend..."
+
+            rsync -av --delete \
+              dist/ \
+              "${{ secrets.PROD_WEB_ROOT }}/"
+
+
+            # -----------------------------------------------
+            # RESTART BACKEND
+            # -----------------------------------------------
+
+            echo "Restarting backend..."
+
             cd ../backend
 
             if pm2 describe km-web > /dev/null 2>&1; then
+
               pm2 reload km-web --update-env
+
             else
-              pm2 start npm --name "km-web" -- start
+
+              pm2 start npm \
+                --name "km-web" \
+                -- start
+
             fi
+
 
             pm2 save
 
-            echo "Deployment completed successfully."
+
+            # -----------------------------------------------
+            # STATUS
+            # -----------------------------------------------
+
+            pm2 status
+
+            echo "======================================"
+            echo "KM DEPLOYMENT SUCCESSFUL"
+            echo "======================================"
