@@ -69,6 +69,7 @@ export default function Footer() {
           <h4 className="text-white font-bold mb-2 text-[13px]">Company</h4>
           <ul className="flex flex-col gap-2 text-[12px]">
             <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
+            <li><Link to="/team" className="hover:text-white transition-colors">Meet Our Team</Link></li>
             <li><Link to="/careers" className="hover:text-white transition-colors">Careers</Link></li>
             <li><Link to="/blog" className="hover:text-white transition-colors">Press & Media</Link></li>
             <li><Link to="/terms" className="hover:text-white transition-colors">Terms & Conditions</Link></li>

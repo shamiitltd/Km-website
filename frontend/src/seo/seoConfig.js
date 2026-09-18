@@ -128,6 +128,24 @@ export const STATIC_PAGE_METADATA = {
       }
     ]
   },
+  '/team': {
+    title: 'Meet Our Team - Builders & Agronomists Behind KisanMitra',
+    description: 'Meet the dedicated software engineers, mobile developers, agronomists, and AI researchers engineering intelligent digital tools for Indian agriculture.',
+    keywords: 'kisanmitra team, agritech developers, Vinay Upadhyay, Raghav, agritech founders, Indian agriculture engineering',
+    canonicalPath: '/team',
+    ogType: 'website',
+    breadcrumbs: [
+      { name: 'Home', path: '/' },
+      { name: 'About Us', path: '/about' },
+      { name: 'Meet Our Team', path: '/team' }
+    ]
+  },
+  '/meet-our-team': {
+    title: 'Meet Our Team - Builders & Agronomists Behind KisanMitra',
+    description: 'Meet the dedicated software engineers, mobile developers, agronomists, and AI researchers engineering intelligent digital tools for Indian agriculture.',
+    canonicalPath: '/team',
+    ogType: 'website'
+  },
   '/blog': {
     title: 'AgriTech & Sustainable Farming Blog | KisanMitra Research',
     description: 'Expert agricultural insights, organic farming techniques, soil health advice, and crop management strategies for Indian farmers.',

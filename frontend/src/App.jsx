@@ -16,6 +16,7 @@ import Weather from './pages/Weather'
 import CropAdvisory from './pages/CropAdvisory'
 import MarketPrices from './pages/MarketPrices'
 import GovernmentSchemes from './pages/GovernmentSchemes'
+import Team from './pages/Team'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 import AnalyticsTracker from './components/AnalyticsTracker'
@@ -51,6 +52,8 @@ function AppLayout() {
         <Route path='/agriculture-schemes' element={<GovernmentSchemes />} />
         <Route path='/how-it-works' element={<HowItWorks />} />
         <Route path='/about' element={<AboutUs />} />
+        <Route path='/team' element={<Team />} />
+        <Route path='/meet-our-team' element={<Team />} />
         <Route path='/pricing' element={<Pricing />} />
         <Route path='/careers' element={<ComingSoon type="careers" />} />
         <Route path='/refund-policy' element={<ComingSoon type="refund" />} />

@@ -59,6 +59,7 @@ exports.getSitemapXml = async (req, res) => {
       { path: '/how-it-works', priority: '0.8', changefreq: 'weekly' },
       { path: '/pricing', priority: '0.8', changefreq: 'weekly' },
       { path: '/about', priority: '0.7', changefreq: 'monthly' },
+      { path: '/team', priority: '0.7', changefreq: 'monthly' },
       { path: '/blog', priority: '0.9', changefreq: 'daily' },
       { path: '/contact', priority: '0.6', changefreq: 'monthly' },
       { path: '/terms-and-conditions', priority: '0.4', changefreq: 'monthly' },

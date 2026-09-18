@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import logo from "../assets/other_logo.png";
 import shamiit from "../assets/shamiit.png";
 
@@ -154,6 +155,23 @@ export default function AboutCompany() {
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* Team CTA */}
+          <div className="mt-8 pt-6 border-t border-gray-100 flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <p className="text-xs font-bold text-gray-800">Driven by a Passionate Engineering &amp; AgriTech Team</p>
+              <p className="text-[11px] text-gray-500">Meet the software architects and field researchers building Kisan Mitra.</p>
+            </div>
+            <Link
+              to="/team"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#123C26] text-white hover:bg-[#2C8C44] transition-colors shadow-sm"
+            >
+              <span>Meet Our Team</span>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </Link>
           </div>
         </div>
       </div>
