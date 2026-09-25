@@ -32,6 +32,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/sitemap.xml', seoController.getSitemapXml);
 app.get('/robots.txt', seoController.getRobotsTxt);
 
+const fs = require('fs');
+
 // Routes
 app.use('/api/blogs', blogRoutes);
 app.use('/api/contact', contactRoutes);
@@ -41,6 +43,41 @@ app.use('/api/seo', seoRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/crop-advisory', cropRoutes);
 app.use('/api/market-prices', marketRoutes);
+
+// --------------------------------------------------------------------------
+// Serve Frontend Static Build Files (Production / Unified Deployment)
+// --------------------------------------------------------------------------
+const frontendDistPath = path.join(__dirname, '../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+}
+
+// --------------------------------------------------------------------------
+// SPA Fallback Middleware
+// Handles direct browser navigation and page refresh on client-side routes
+// (e.g. /about, /blog, /contact, /features, /weather, /market-prices)
+// --------------------------------------------------------------------------
+app.use((req, res, next) => {
+  if (req.method !== 'GET') {
+    return next();
+  }
+
+  // Never intercept API endpoints, uploaded media, sitemap or robots
+  if (
+    req.path.startsWith('/api') ||
+    req.path.startsWith('/uploads')
+  ) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+
+  // Return index.html for all frontend routes
+  const indexPath = path.join(frontendDistPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+
+  next();
+});
 
 // Server Init
 app.listen(PORT, () => {
