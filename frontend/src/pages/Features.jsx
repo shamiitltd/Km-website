@@ -1,4 +1,5 @@
 import FeaturesHero from "../components/FeaturesHero";
+import InteractiveFeatureShowcase from "../components/InteractiveFeatureShowcase";
 import AllFeatures from "../components/AllFeatures";
 import AdvancedAICapabilities from "../components/AdvancedAICapabilities";
 import AdvancedTechnology from "../components/AdvancedTechnology";
@@ -8,6 +9,7 @@ export default function Features() {
   return (
     <main className="w-full">
       <FeaturesHero />
+      <InteractiveFeatureShowcase />
       <AllFeatures />
       <AdvancedAICapabilities />
       <AdvancedTechnology />
@@ -15,3 +17,4 @@ export default function Features() {
     </main>
   );
 }
+

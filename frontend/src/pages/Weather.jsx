@@ -3,6 +3,7 @@ import farmBgLocal from '../assets/farm_bg.jpg';
 import cta_plant from '../assets/cta_plant.png';
 import WeatherRadarMap from '../components/WeatherRadarMap';
 import { showComingSoon } from '../utils/comingSoon';
+import { showWarningToast, showInfoToast } from '../utils/toast';
 
 // API Base resolution
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -731,7 +732,7 @@ export default function Weather() {
   // Real Browser Geolocation Trigger
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
+      showWarningToast('Geolocation is not supported by your browser. Please select your state and district from the selector.', 'Location Unavailable');
       return;
     }
     setLocating(true);
@@ -743,7 +744,7 @@ export default function Weather() {
       (err) => {
         console.warn('GPS location request warning:', err);
         setLocating(false);
-        alert('Could not access GPS. Please choose a nearby district manually.');
+        showWarningToast('Could not access GPS location. Please choose a nearby district manually.', 'GPS Access Denied');
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
@@ -762,7 +763,7 @@ export default function Weather() {
   // Text-To-Speech Audio Advisory
   const toggleSpeechAdvisory = () => {
     if (!('speechSynthesis' in window)) {
-      alert('Audio advisory is not supported in this browser.');
+      showInfoToast('Audio voice advisory is not supported in this browser.', 'Audio Advisory');
       return;
     }
 
@@ -2551,7 +2552,7 @@ export default function Weather() {
               
               <button
                 onClick={() => {
-                  alert('Redirecting to Apple App Store — KisanMitra iOS Client.');
+                  showInfoToast('The Kisan Mitra iOS App is currently in TestFlight Beta. You can download the Android APK immediately!', 'Apple App Store (Beta)');
                   setActiveModal(null);
                 }}
                 className="w-full py-3 px-4 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-sm sm:text-base transition-colors flex items-center justify-center gap-2 cursor-pointer"

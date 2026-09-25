@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminBlog from './AdminBlog';
 import AdminBroadcast from './AdminBroadcast';
+import { showErrorToast, showSuccessToast } from '../utils/toast';
 
 export default function AdminDashboard({ defaultSection = 'dashboard', defaultSubSection = 'all' }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -293,12 +294,14 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
       if (res.ok) {
         setNewRedirect({ sourceUrl: '', targetUrl: '', statusCode: 301 });
         fetchSeoData();
+        showSuccessToast('301 Redirect rule added successfully.', 'Rule Created');
       } else {
         const err = await res.json().catch(() => ({}));
-        alert(err.error || 'Failed to add redirect rule.');
+        showErrorToast(err.error || 'Failed to add redirect rule.', 'Redirect Rule Error');
       }
     } catch (err) {
       console.error('Redirect creation failed:', err);
+      showErrorToast('Server connection error. Please try again.', 'Redirect Failed');
     }
   };
 
@@ -311,6 +314,7 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
       });
       if (res.ok) {
         fetchSeoData();
+        showSuccessToast('Redirect rule deleted.', 'Rule Removed');
       }
     } catch (err) {
       console.error('Failed to delete redirect:', err);
@@ -334,11 +338,13 @@ export default function AdminDashboard({ defaultSection = 'dashboard', defaultSu
       });
       if (res.ok) {
         fetchMedia();
+        showSuccessToast('Image uploaded successfully.', 'Media Uploaded');
       } else {
-        alert('Failed to upload image.');
+        showErrorToast('Failed to upload image. Please check file format and size.', 'Upload Error');
       }
     } catch (err) {
       console.error('Upload media error:', err);
+      showErrorToast('Failed to upload image.', 'Upload Error');
     } finally {
       setIsUploadingMedia(false);
       if (mediaFileInputRef.current) mediaFileInputRef.current.value = '';

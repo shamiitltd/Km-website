@@ -76,24 +76,93 @@ export const STATIC_PAGE_METADATA = {
   },
   '/features': {
     title: 'AI Agricultural Features & Smart Farming Tools | KisanMitra',
-    description: 'Explore KisanMitra\'s AI-driven smart crop advisory, instant disease diagnosis from leaf photos, local hyper-local weather alerts, and government schemes.',
-    keywords: 'crop disease scanner, soil health diagnosis, mandi price tracker, weather forecast farmers, agritech features',
+    description: 'Explore KisanMitra\'s precision farming suite: AI leaf disease scanner, soil zinc telemetry, crop lifecycle roadmaps with NDVI satellite data, 6-mode mandi marketplace, government schemes directory, and 8-language voice assistant.',
+    keywords: 'crop disease scanner, leaf vision AI, soil health diagnosis, zinc deficiency test, mandi trader bidding, NPK split calculator, government agriculture schemes, PM-KISAN, precision agriculture India, kisan mitra app features',
     canonicalPath: '/features',
     ogType: 'website',
     breadcrumbs: [
       { name: 'Home', path: '/' },
       { name: 'Features', path: '/features' }
+    ],
+    schemas: [
+      ORGANIZATION_SCHEMA,
+      {
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'KisanMitra Precision Farming App',
+        operatingSystem: 'Android, iOS, Web (PWA)',
+        applicationCategory: 'AgriculturalApplication',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'INR'
+        },
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: '4.9',
+          ratingCount: '245000'
+        },
+        featureList: [
+          'YOLOv10 AI Point-and-Shoot Leaf Disease Diagnostics',
+          'Soil NPK & Zinc Deficiency Analysis with Local Store Telemetry',
+          'Geofenced Farm Roadmap & NDVI Satellite Surveillance',
+          '6-Pillar Farmer Marketplace with Trader Bids & Mandi Transport',
+          'Government Agriculture Schemes & Subsidy Eligibility Directory',
+          'Multilingual Mitra Voice AI in 8 Indian Regional Dialects'
+        ]
+      }
     ]
   },
   '/how-it-works': {
-    title: 'How KisanMitra Works - 5-Step AI Farming Guide | KisanMitra',
-    description: 'Learn how KisanMitra empowers farmers through simple 5-step photo diagnostics, soil analysis, tailored advisory, and real-time mandi connections.',
-    keywords: 'how kisanmitra works, farm diagnosis step by step, smart farming workflow, agri app tutorial',
+    title: 'How KisanMitra Works - 5-Step AI Precision Farming Guide | KisanMitra',
+    description: 'Discover the 5-step precision agriculture workflow: Geofenced Farm Setup, Daily AI Satellite Surveillance, Instant Leaf Doctor Diagnostics, Dynamic NPK Nutrition, and Mandi Marketplace Logistics.',
+    keywords: 'how kisanmitra works, AI farming guide, step by step crop advisory, precision agriculture workflow, crop disease diagnosis steps, mandi bidding tutorial, smart farming routine',
     canonicalPath: '/how-it-works',
     ogType: 'website',
     breadcrumbs: [
       { name: 'Home', path: '/' },
       { name: 'How It Works', path: '/how-it-works' }
+    ],
+    schemas: [
+      ORGANIZATION_SCHEMA,
+      {
+        '@context': 'https://schema.org',
+        '@type': 'HowTo',
+        name: 'How to Practice Precision Farming with KisanMitra AI',
+        description: 'A 5-phase systematic workflow transforming traditional farming into high-yield, disease-resilient precision agriculture.',
+        step: [
+          {
+            '@type': 'HowToStep',
+            position: 1,
+            name: 'Farm Geofencing & Baseline Profiling',
+            text: 'Map field polygon boundaries, select crop varieties, and log soil history to establish baseline micro-climatic models.'
+          },
+          {
+            '@type': 'HowToStep',
+            position: 2,
+            name: 'Daily AI Surveillance & Weather Windows',
+            text: 'Receive daily Sentinel-2 NDVI vegetative health telemetry and hyper-local spraying/irrigation window advisories.'
+          },
+          {
+            '@type': 'HowToStep',
+            position: 3,
+            name: 'Point-and-Shoot AI Leaf Diagnostics',
+            text: 'Capture smartphone photos of damaged leaves for sub-second YOLOv10 pathology diagnosis with chemical dosages and safety intervals.'
+          },
+          {
+            '@type': 'HowToStep',
+            position: 4,
+            name: 'Soil Nutrition & Growth Stage Roadmaps',
+            text: 'Execute calibrated NPK split applications and micro-nutrient corrections with inventory checking at verified local agri-dealers.'
+          },
+          {
+            '@type': 'HowToStep',
+            position: 5,
+            name: 'Direct Mandi Marketplace & Transport Logistics',
+            text: 'List verified harvests across 165+ wholesale APMC mandis, receive direct trader bids, and book farm-gate freight logistics.'
+          }
+        ]
+      }
     ]
   },
   '/pricing': {

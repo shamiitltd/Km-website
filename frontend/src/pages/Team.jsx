@@ -141,10 +141,10 @@ export default function Team() {
     <div className="w-full bg-[#FAFCF8] min-h-screen text-gray-800">
       
       {/* 1. HERO SECTION */}
-      <section className="relative pt-8 pb-10 sm:pt-12 sm:pb-12 md:pt-14 md:pb-14 overflow-hidden bg-gradient-to-b from-[#EBF5EE] via-[#F4FAF5] to-[#FAFCF8] border-b border-gray-200/70">
+      <section className="relative pt-8 pb-8 sm:pt-10 sm:pb-10 md:pt-12 md:pb-12 overflow-hidden bg-gradient-to-b from-[#EBF5EE] via-[#F4FAF5] to-[#FAFCF8] border-b border-gray-200/70">
         <div className="absolute inset-0 bg-[radial-gradient(#2C8C44_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
         
-        <div className="max-w-[95rem] mx-auto px-6 sm:px-10 md:px-14 lg:px-20 xl:px-24 relative z-10">
+        <div className="max-w-[96rem] mx-auto px-4 sm:px-6 md:px-12 lg:px-20 relative z-10">
           {/* Breadcrumbs */}
           <div className="flex items-center gap-2 text-sm font-semibold text-gray-500 mb-4">
             <Link to="/" className="hover:text-[#2C8C44] transition-colors">Home</Link>
@@ -192,7 +192,7 @@ export default function Team() {
       </section>
 
       {/* 2. CORE LEADERSHIP & DEVELOPERS */}
-      <section className="py-10 sm:py-12 md:py-14 max-w-[95rem] mx-auto px-6 sm:px-10 md:px-14 lg:px-20 xl:px-24">
+      <section className="py-8 sm:py-10 md:py-12 max-w-[96rem] mx-auto px-4 sm:px-6 md:px-12 lg:px-20">
         <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
           <p className="text-xs sm:text-sm font-extrabold text-[#2C8C44] uppercase tracking-widest mb-2">CORE ENGINEERING LEADS</p>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-black text-gray-900 mb-3">
@@ -325,8 +325,8 @@ export default function Team() {
       </section>
 
       {/* 3. AND OUR EXTENDED SPECIALIST TEAM */}
-      <section className="py-10 sm:py-12 md:py-14 bg-[#F4FAF5] border-y border-emerald-100">
-        <div className="max-w-[95rem] mx-auto px-6 sm:px-10 md:px-14 lg:px-20 xl:px-24">
+      <section className="py-8 sm:py-10 md:py-12 bg-[#F4FAF5] border-y border-emerald-100">
+        <div className="max-w-[96rem] mx-auto px-4 sm:px-6 md:px-12 lg:px-20">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 sm:mb-10">
             <div>
               <p className="text-xs sm:text-sm font-extrabold text-[#2C8C44] uppercase tracking-widest mb-2">OUR EXTENDED SPECIALIST SQUAD</p>
@@ -381,7 +381,7 @@ export default function Team() {
       </section>
 
       {/* 4. OUR ENGINEERING VALUES */}
-      <section className="py-10 sm:py-12 md:py-14 max-w-[95rem] mx-auto px-6 sm:px-10 md:px-14 lg:px-20 xl:px-24">
+      <section className="py-8 sm:py-10 md:py-12 max-w-[96rem] mx-auto px-4 sm:px-6 md:px-12 lg:px-20">
         <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
           <p className="text-xs sm:text-sm font-extrabold text-[#2C8C44] uppercase tracking-widest mb-2">HOW WE BUILD</p>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-black text-gray-900 mb-3">
@@ -411,8 +411,8 @@ export default function Team() {
       </section>
 
       {/* 5. CAREERS & JOIN US CTA */}
-      <section className="py-12 md:py-14 bg-[#123C26] text-white">
-        <div className="max-w-[95rem] mx-auto px-6 sm:px-10 md:px-14 lg:px-20 xl:px-24 text-center">
+      <section className="py-8 sm:py-10 md:py-12 bg-[#123C26] text-white">
+        <div className="max-w-[96rem] mx-auto px-4 sm:px-6 md:px-12 lg:px-20 text-center">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black mb-3">Want to Build the Future of Indian Agriculture?</h2>
             <p className="text-base sm:text-lg text-emerald-100 max-w-2xl mx-auto mb-7 leading-relaxed">

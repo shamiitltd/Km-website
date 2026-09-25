@@ -19,7 +19,7 @@ export default function PricingCTA() {
               Ready to Grow Smarter?
             </h2>
             <p className="text-gray-200 text-[16px] md:text-[17px] leading-relaxed">
-              Join thousands of farmers who are already increasing their yield and income with Kisan Mitra.
+              Join progressive growers discovering smarter, high-yield precision farming with Kisan Mitra.
             </p>
           </div>
         </div>

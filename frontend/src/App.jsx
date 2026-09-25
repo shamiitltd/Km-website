@@ -22,6 +22,7 @@ import ScrollToTop from './components/ScrollToTop'
 import AnalyticsTracker from './components/AnalyticsTracker'
 import SeoManager from './components/SeoManager'
 import ComingSoonModal from './components/ComingSoonModal'
+import ModernToastContainer from './components/ModernToastContainer'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 
 function AppLayout() {
@@ -34,6 +35,7 @@ function AppLayout() {
       <AnalyticsTracker />
       <SeoManager />
       <ComingSoonModal />
+      <ModernToastContainer />
       {!isAdminRoute && <NavBar />}
       <Routes>
         <Route path='/' element={<Home />} />
